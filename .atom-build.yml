@@ -1,0 +1,14 @@
+cmd: "python"
+name: "default"
+args:
+  - "src"
+sh: true,
+targets:
+  test:
+    cmd: "python"
+    args:
+      - "tests"
+  test-multisig:
+    cmd: "python"
+    args:
+      - "tests/multisig.py"
