@@ -10,8 +10,6 @@ import core.log
 
 from cli.arguments.parser import DEFAULT_PARSER
 from cli.arguments.constants import *
-from core.data.parser import *
-
 
 #Constants
 LOGGER = logging.getLogger(__name__)
