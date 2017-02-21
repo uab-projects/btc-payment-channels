@@ -1,0 +1,14 @@
+cmd: "python"
+name: "Default"
+args:
+ - "src"
+sh: true
+targets:
+    test-class-tx:
+        cmd: "python"
+        args:
+         - "bitcoin/tx.py"
+    test-class-field:
+        cmd: "python"
+        args:
+         - "bitcoin/field.py"
