@@ -225,6 +225,20 @@ class VarInt(Field):
     def __str__(self):
         return "0x{0:02x}".format(self._value)
 
+class U8BLEInt(Field):
+    """
+    Defines a Bitcoin protocol unsigned 8-byte integer field
+    """
+    name = "Unsigned 8-byte integer little-endian field (uint64_t)"
+    description = "64 bits without 2-complement sign"
+    def serialize(self):
+        return struct.pack('<Q', self._value)
+    def deserialize(self, v):
+        self._value = struct.unpack('<Q', v)[0]
+        return self
+    def __str__(self):
+        return "0x{0:02x}".format(self._value)
+
 # Classes tests
 if __name__ == "__main__":
     # Field interface
@@ -254,6 +268,17 @@ if __name__ == "__main__":
     print(" Serializing the value (as hex):", T_S4BLE.serialize().hex())
     print(" Deserializing the value:", T_S4BLE.deserialize(b'\x03\0\0\0').value)
     print(" Test passed")
+    #===========================================================================
+    print("Testing U8BLEInt (signed 8-byte integer) class")
+    print(" Creating U8BLEInt instance")
+    T_U8BLE = U8BLEInt()
+    print(" Assigning a value (1000000)")
+    T_U8BLE.value = 1000000
+    print(" Returning the value:", T_U8BLE.value)
+    print(" Serializing the value (as hex):", T_U8BLE.serialize().hex())
+    print(" Deserializing the value:", T_U8BLE.deserialize(b'\x40\x42\x0f\0\0\0\0\0').value)
+    print(" Test passed")
+    #===========================================================================
     print("Testing VarInt (variable-sized integer) class")
     print(" Creating VarInt instance")
     T_VARINT = VarInt()
@@ -287,6 +312,9 @@ if __name__ == "__main__":
           T_VARINT.serialize().hex())
     if len(T_VARINT.serialize()) != 9:
         raise ValueError(" Value", T_VARINT.value, "should fit in 9 bytes!")
+    print("All serialize tests passed")
+    # Enf of serializing tests
+    print("Starting deseraliazing tests")
     print(" Creating a 1-byte decodable value")
     T_VARINT.deserialize((0xf0).to_bytes(1, byteorder='big'))
     print(" Deserializing a 1-byte value", "0x{0:02x}".format(0xf0), "=",
