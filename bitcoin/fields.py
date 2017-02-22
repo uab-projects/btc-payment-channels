@@ -148,6 +148,20 @@ class U4BLEInt(Field):
     def __str__(self):
         return "0x{0:02x}".format(self._value)
 
+class U8BLEInt(Field):
+    """
+    Defines a Bitcoin protocol unsigned 8-byte integer field
+    """
+    name = "Unsigned 8-byte integer little-endian field (uint64_t)"
+    description = "64 bits without 2-complement sign"
+    def serialize(self):
+        return struct.pack('<Q', self._value)
+    def deserialize(self, v):
+        self._value = struct.unpack('<Q', v)[0]
+        return self
+    def __str__(self):
+        return "0x{0:02x}".format(self._value)
+
 class VarInt(Field):
     """
     Defines a Bitcoin protocol variable-sized integer field.
@@ -225,19 +239,24 @@ class VarInt(Field):
     def __str__(self):
         return "0x{0:02x}".format(self._value)
 
-class U8BLEInt(Field):
+# Character classes
+class VarLEChar(Field):
     """
-    Defines a Bitcoin protocol unsigned 8-byte integer field
+    Defines a Bitcoin standard uchar[], encoded in little-endian
     """
-    name = "Unsigned 8-byte integer little-endian field (uint64_t)"
-    description = "64 bits without 2-complement sign"
+    name = "Bitcoin variable-length unsigned little-endian character array"
+    description = "Allows to save a variable-length character array in LE"
+    def __len__(self):
+        return len(self._value)
     def serialize(self):
-        return struct.pack('<Q', self._value)
+        rw_value = bytearray(self._value)
+        rw_value.reverse()
+        return bytes(rw_value)
     def deserialize(self, v):
-        self._value = struct.unpack('<Q', v)[0]
+        rw_value = bytearray(v)
+        rw_value.reverse()
+        self._value = bytes(rw_value)
         return self
-    def __str__(self):
-        return "0x{0:02x}".format(self._value)
 
 def serialize_tests(deserialized, serialized, cls):
     """
@@ -254,7 +273,10 @@ def serialize_tests(deserialized, serialized, cls):
         ValueError if serialization or deserialization fails
     """
     # Serialization test
-    print(" Serializing the value", "0x{0:02x}".format(deserialized))
+    if type(deserialized) == bytes:
+        print(" Serializing the value", deserialized.hex())
+    else:
+        print(" Serializing the value", "0x{0:02x}".format(deserialized))
     serialized_guess = cls(deserialized).serialize()
     if serialized_guess != serialized:
         raise ValueError("Serialization failed: "+serialized_guess.hex()+\
@@ -278,7 +300,12 @@ def tests():
              (0xF0F1, bytes().fromhex("fdf1f0"), VarInt),
              (0xFD, bytes().fromhex("fdfd00"), VarInt),
              (0xF0F1F2F3, bytes().fromhex("fef3f2f1f0"), VarInt),
-             (0xF0F1F2F3F4F5F6F7, bytes().fromhex("fff7f6f5f4f3f2f1f0"), VarInt)
+             (0xF0F1F2F3F4F5F6F7, bytes().fromhex("fff7f6f5f4f3f2f1f0"),
+              VarInt),
+             (bytes().fromhex("""21f10dbfb0ff49e2853629517fa176dc00d943f203aa"""
+                              """e3511288a7dd89280ac2"""),
+              bytes().fromhex("""c20a2889dda7881251e3aa03f243d900dc76a17f5129"""
+                              """3685e249ffb0bf0df121"""), VarLEChar),
             ]
 
     print("Starting serialization test")
