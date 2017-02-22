@@ -20,7 +20,7 @@ The `-h` argument will help you to discover how the software works and what it c
 __Fields:__
 - [x] varchar
 - [x] uchar[]
-- [ ] int64_t
+- [x] int64_t
 
 **Scripting**
 - [ ] Structure
