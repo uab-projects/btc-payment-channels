@@ -11,4 +11,4 @@ targets:
     test-class-field:
         cmd: "python"
         args:
-         - "bitcoin/field.py"
+         - "bitcoin/fields.py"

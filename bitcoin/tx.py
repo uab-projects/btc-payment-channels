@@ -116,7 +116,7 @@ class Tx(Serializable):
             the object itself, with the transaction loaded
         """
         offset = 0
-        version = S4BLEInt().deserialize(data[:4])
+        version = S4BLEInt().deserialize(data[offset:4])
         offset += 4
         number_of_inputs = VarInt().deserialize(data[offset:])
         offset += len(number_of_inputs)

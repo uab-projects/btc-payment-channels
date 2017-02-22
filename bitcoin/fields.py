@@ -211,13 +211,13 @@ class VarInt(Field):
     def deserialize(self, v):
         size = self.translate_size(v[0])
         if size == 0:
-            self._value = size
+            self._value = v[0]
         elif size == 2:
-            self._value = struct.unpack('<BH', v[:2])[1]
+            self._value = struct.unpack('<H', v[1:3])[0]
         elif size == 4:
-            self._value = struct.unpack('<BL', v[:4])[1]
+            self._value = struct.unpack('<L', v[1:5])[0]
         elif size == 8:
-            self._value = struct.unpack('<BQ', v[:8])[1]
+            self._value = struct.unpack('<Q', v[1:9])[0]
         else:
             raise ValueError("""Length of the deserialize variable integer """
                              """must be 1, 3, 5 or 9 bytes""")
@@ -288,11 +288,11 @@ if __name__ == "__main__":
     if len(T_VARINT.serialize()) != 9:
         raise ValueError(" Value", T_VARINT.value, "should fit in 9 bytes!")
     print(" Creating a 1-byte decodable value")
-    T_VARINT.deserialize((0xf4).to_bytes(1, byteorder='big'))
-    print(" Deserializing a 1-byte value", "0x{0:02x}".format(0xf4), "=",
+    T_VARINT.deserialize((0xf0).to_bytes(1, byteorder='big'))
+    print(" Deserializing a 1-byte value", "0x{0:02x}".format(0xf0), "=",
           "0x{0:02x}".format(T_VARINT.value))
-    if T_VARINT.value != 0xf4:
-        raise ValueError(" Value "+"0x{0:02x}".format(0xf4)+" != "+\
+    if T_VARINT.value != 0xf0:
+        raise ValueError(" Value "+"0x{0:02x}".format(0xf0)+" != "+\
                          "0x{0:02x}".format(T_VARINT.value))
     print(" Creating a 3-byte decodable value")
     T_VARINT.deserialize((0xfdf1f0).to_bytes(3, byteorder='big'))
