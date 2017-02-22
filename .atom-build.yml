@@ -12,3 +12,7 @@ targets:
     cmd: "python"
     args:
       - "tests/multisig.py"
+  test-base58:
+    cmd: "python"
+    args:
+      - "tests/base58tests.py"
