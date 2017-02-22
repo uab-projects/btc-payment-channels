@@ -239,108 +239,54 @@ class U8BLEInt(Field):
     def __str__(self):
         return "0x{0:02x}".format(self._value)
 
+def serialize_tests(deserialized, serialized, cls):
+    """
+    Given a serialized value and a checked deserialized value, checks against
+    the class if the serialization and deserialization methods are properly
+    implemented or raises a ValueError
+
+    Args:
+        deserialized (object): python object corresponding to serialized bytes
+        serialized (bytes): serialized properly bytes
+        cls (class): python class to check against
+
+    Raises:
+        ValueError if serialization or deserialization fails
+    """
+    # Serialization test
+    print(" Serializing the value", "0x{0:02x}".format(deserialized))
+    serialized_guess = cls(deserialized).serialize()
+    if serialized_guess != serialized:
+        raise ValueError("Serialization failed: "+serialized_guess.hex()+\
+                         " != "+serialized.hex())
+    # Deserialization test
+    print(" Deserializing the value", serialized.hex())
+    deserialized_guess = cls().deserialize(serialized).value
+    if deserialized_guess != deserialized:
+        raise ValueError("Deserialization failed: "+\
+                         "0x{0:02x}".format(deserialized_guess)+\
+                         " != "+"0x{0:02x}".format(deserialized))
+def tests():
+    """
+    Function to test all int size-fixed values
+    """
+    cases = [(3, b'\x03\0\0\0', S4BLEInt),
+             (3, b'\x03\0\0\0', U4BLEInt),
+             (1000000, b'\x40\x42\x0f\0\0\0\0\0', U8BLEInt),
+             (7, b'\x07\0\0\0\0\0\0\0', U8BLEInt),
+             (0xF0, bytes().fromhex("f0"), VarInt),
+             (0xF0F1, bytes().fromhex("fdf1f0"), VarInt),
+             (0xFD, bytes().fromhex("fdfd00"), VarInt),
+             (0xF0F1F2F3, bytes().fromhex("fef3f2f1f0"), VarInt),
+             (0xF0F1F2F3F4F5F6F7, bytes().fromhex("fff7f6f5f4f3f2f1f0"), VarInt)
+            ]
+
+    print("Starting serialization test")
+    for case in cases:
+        print("Testing", case[2].__name__, "class.")
+        serialize_tests(*case)
+
+    print("Tests passed")
 # Classes tests
 if __name__ == "__main__":
-    # Field interface
-    print("Testing Field main interface")
-    print(" Creating Field instance")
-    T_FIELD = Field()
-    print(" Assigning a value (3)")
-    T_FIELD.value = 3
-    print(" Returning the value:", T_FIELD.value)
-    print(" Test passed")
-    # Integers test
-    print("Testing U4BLEInt (unsigned 4-byte integer) class")
-    print(" Creating U4BLEInt instance")
-    T_U4BLE = U4BLEInt()
-    print(" Assigning a value (3)")
-    T_U4BLE.value = 3
-    print(" Returning the value:", T_U4BLE.value)
-    print(" Serializing the value (as hex):", T_U4BLE.serialize().hex())
-    print(" Deserializing the value:", T_U4BLE.deserialize(b'\x03\0\0\0').value)
-    print(" Test passed")
-    print("Testing S4BLEInt (signed 4-byte integer) class")
-    print(" Creating S4BLEInt instance")
-    T_S4BLE = S4BLEInt()
-    print(" Assigning a value (3)")
-    T_S4BLE.value = 3
-    print(" Returning the value:", T_S4BLE.value)
-    print(" Serializing the value (as hex):", T_S4BLE.serialize().hex())
-    print(" Deserializing the value:", T_S4BLE.deserialize(b'\x03\0\0\0').value)
-    print(" Test passed")
-    #===========================================================================
-    print("Testing U8BLEInt (signed 8-byte integer) class")
-    print(" Creating U8BLEInt instance")
-    T_U8BLE = U8BLEInt()
-    print(" Assigning a value (1000000)")
-    T_U8BLE.value = 1000000
-    print(" Returning the value:", T_U8BLE.value)
-    print(" Serializing the value (as hex):", T_U8BLE.serialize().hex())
-    print(" Deserializing the value:", T_U8BLE.deserialize(b'\x40\x42\x0f\0\0\0\0\0').value)
-    print(" Test passed")
-    #===========================================================================
-    print("Testing VarInt (variable-sized integer) class")
-    print(" Creating VarInt instance")
-    T_VARINT = VarInt()
-    print(" Assigning a 1-byte encodable value")
-    T_VARINT.value = 0xF0
-    print(" Serializing the value", "0x{0:02x}".format(T_VARINT.value), "=",
-          T_VARINT.serialize().hex())
-    if len(T_VARINT.serialize()) != 1:
-        raise ValueError(" Value", T_VARINT.value, "should fit in 1 byte!")
-    print(" Assigning a 3-byte encodable (1-byte size + 2-byte int) value")
-    T_VARINT.value = 0xF0F1
-    print(" Serializing the value", "0x{0:02x}".format(T_VARINT.value), "=",
-          T_VARINT.serialize().hex())
-    if len(T_VARINT.serialize()) != 3:
-        raise ValueError(" Value", T_VARINT.value, "should fit in 3 bytes!")
-    print(" Tricky value 0xFD, should be encoded in 3 bytes")
-    T_VARINT.value = 0xFD
-    print(" Serializing the value", "0x{0:02x}".format(T_VARINT.value), "=",
-          T_VARINT.serialize().hex())
-    if len(T_VARINT.serialize()) != 3:
-        raise ValueError(" Value", T_VARINT.value, "should fit in 3 bytes!")
-    print(" Assigning a 5-byte encodable (1-byte size + 4-byte int) value")
-    T_VARINT.value = 0xF0F1F2F3
-    print(" Serializing the value", "0x{0:02x}".format(T_VARINT.value), "=",
-          T_VARINT.serialize().hex())
-    if len(T_VARINT.serialize()) != 5:
-        raise ValueError(" Value", T_VARINT.value, "should fit in 5 bytes!")
-    print(" Assigning a 9-byte encodable (1-byte size + 8-byte int) value")
-    T_VARINT.value = 0xF0F1F2F3F4F5F6F7
-    print(" Serializing the value", "0x{0:02x}".format(T_VARINT.value), "=",
-          T_VARINT.serialize().hex())
-    if len(T_VARINT.serialize()) != 9:
-        raise ValueError(" Value", T_VARINT.value, "should fit in 9 bytes!")
-    print("All serialize tests passed")
-    # Enf of serializing tests
-    print("Starting deseraliazing tests")
-    print(" Creating a 1-byte decodable value")
-    T_VARINT.deserialize((0xf0).to_bytes(1, byteorder='big'))
-    print(" Deserializing a 1-byte value", "0x{0:02x}".format(0xf0), "=",
-          "0x{0:02x}".format(T_VARINT.value))
-    if T_VARINT.value != 0xf0:
-        raise ValueError(" Value "+"0x{0:02x}".format(0xf0)+" != "+\
-                         "0x{0:02x}".format(T_VARINT.value))
-    print(" Creating a 3-byte decodable value")
-    T_VARINT.deserialize((0xfdf1f0).to_bytes(3, byteorder='big'))
-    print(" Deserializing a 3-byte value", "0x{0:02x}".format(0xfdf1f0), "=",
-          "0x{0:02x}".format(T_VARINT.value))
-    if T_VARINT.value != 0xf0f1:
-        raise ValueError(" Value "+"0x{0:02x}".format(0xf0f0)+" != "+\
-                         "0x{0:02x}".format(T_VARINT.value))
-    print(" Creating a 5-byte decodable value")
-    T_VARINT.deserialize((0xfef3f2f1f0).to_bytes(5, byteorder='big'))
-    print(" Deserializing a 5-byte value", "0x{0:02x}".format(0xfef3f2f1f0),
-          "=", "0x{0:02x}".format(T_VARINT.value))
-    if T_VARINT.value != 0xF0F1F2F3:
-        raise ValueError(" Value "+"0x{0:02x}".format(0xF0F1F2F3)+" != "+\
-                         "0x{0:02x}".format(T_VARINT.value))
-    print(" Creating a 9-byte decodable value")
-    T_VARINT.deserialize((0xfff7f6f5f4f3f2f1f0).to_bytes(9, byteorder='big'))
-    print(" Deserializing a 9-byte value",
-          "0x{0:02x}".format(0xfff7f6f5f4f3f2f1f0), "=", "0x{0:02x}".format(T_VARINT.value))
-    if T_VARINT.value != 0xf0f1f2f3f4f5f6f7:
-        raise ValueError(" Value "+"0x{0:02x}".format(0xf0f1f2f3f4f5f6f7)+\
-                         " != "+"0x{0:02x}".format(T_VARINT.value))
-    print(" Test passed")
+    tests()
