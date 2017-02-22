@@ -18,8 +18,8 @@ The `-h` argument will help you to discover how the software works and what it c
 
 ## TO-DO
 __Fields:__
-- [ ] varchar
-- [ ] uchar[]
+- [x] varchar
+- [x] uchar[]
 - [ ] int64_t
 
 **Scripting**

@@ -225,6 +225,25 @@ class VarInt(Field):
     def __str__(self):
         return "0x{0:02x}".format(self._value)
 
+# Character classes
+class VarLEChar(Field):
+    """
+    Defines a Bitcoin standard uchar[], encoded in little-endian
+    """
+    name = "Bitcoin variable-length unsigned little-endian character array"
+    description = "Allows to save a variable-length character array in LE"
+    def __len__(self):
+        return len(self._value)
+    def serialize(self):
+        rw_value = bytearray(self._value)
+        rw_value.reverse()
+        return bytes(rw_value)
+    def deserialize(self, v):
+        rw_value = bytearray(v)
+        rw_value.reverse()
+        self._value = bytes(rw_value)
+        return self
+
 # Classes tests
 if __name__ == "__main__":
     # Field interface
@@ -316,3 +335,18 @@ if __name__ == "__main__":
         raise ValueError(" Value "+"0x{0:02x}".format(0xf0f1f2f3f4f5f6f7)+\
                          " != "+"0x{0:02x}".format(T_VARINT.value))
     print(" Test passed")
+    print("Testing VarLEChar")
+    T_TX_BE = bytes().fromhex("""21f10dbfb0ff49e2853629517fa176dc00d943f203aa"""
+                              """e3511288a7dd89280ac2""")
+    T_TX_LE = bytes().fromhex("""c20a2889dda7881251e3aa03f243d900dc76a17f5129"""
+                              """3685e249ffb0bf0df121""")
+    print(" Serializing a 32-byte array (txId)...")
+    T_VARLECHAR_SER = VarLEChar(T_TX_BE).serialize()
+    if T_VARLECHAR_SER != T_TX_LE:
+        raise ValueError(" Value "+T_TX_LE.hex()+" != "+T_VARLECHAR_SER.hex())
+    print(" Deserializing a 32-byte array (txId in a raw tx)...")
+    T_VARLECHAR_DES = VarLEChar().deserialize(T_TX_LE)
+    if T_VARLECHAR_DES.value != T_TX_BE:
+        # pylint: disable=E1101
+        raise ValueError(" Value "+T_TX_BE.hex()+" != "+\
+        T_VARLECHAR_DES.value.hex())
