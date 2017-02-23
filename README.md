@@ -16,20 +16,6 @@ python src -h
 ```
 The `-h` argument will help you to discover how the software works and what it can do for you
 
-## TO-DO
-__Fields:__
-- [x] varchar
-- [x] uchar[]
-- [x] int64_t
-
-**Scripting**
-- [ ] Structure
-
-**Transaction**
-- [ ] inputs
-- [ ] outputs
-
-
 ### License
 
 ***Made with love in [ETSE](https://uab.cat/enginyeria), UAB by @ccebrecos & @davidlj***
