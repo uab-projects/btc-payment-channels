@@ -9,8 +9,13 @@ targets:
         args:
          - "-m"
          - "src.bitcoin.tx"
-    test-tx-field:
+    test-field-general:
         cmd: "python"
         args:
          - "-m"
-         - "src.bitcoin.field.tx"
+         - "src.bitcoin.field.general"
+    test-field-script:
+        cmd: "python"
+        args:
+         - "-m"
+         - "src.bitcoin.field.script"

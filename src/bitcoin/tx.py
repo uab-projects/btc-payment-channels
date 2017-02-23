@@ -19,7 +19,7 @@ about it
 
 # Libraries
 from .interfaces import Serializable
-from .field.tx import S4BLEInt, U4BLEInt, VarInt
+from .field.general import S4BLEInt, U4BLEInt, VarInt
 
 # Constants
 DEFAULT_VERSION = 1
@@ -123,13 +123,13 @@ class Tx(Serializable):
         inputs = []
         for input_i in range(number_of_inputs.value):
             # Deserialize inputs
-            input_i += 4
+            pass
         number_of_outputs = VarInt().deserialize(data[offset:])
         offset += len(number_of_outputs)
         outputs = []
         for output_i in range(number_of_outputs.value):
             # Deserialize outputs
-            output_i += 4
+            pass
         locktime = U4BLEInt().deserialize(data[offset:offset+4])
         offset += 4
         if offset != len(data):

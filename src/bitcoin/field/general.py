@@ -1,15 +1,54 @@
 # -*- coding: utf-8 -*-
 """
-Defines data fields used in transactions.
+Defines data fields used widely around the Bitcoin protocol standards
 
-See model class for more information about naming
+For convention purposes, we'll use special notation when naming classes.
+These prefixes may be applied:
+
+ - Size prefix:
+   Some fields have a fixed size. In this case, a prefix is added with the
+   following components:
+    - If the field has sign or not
+      U for unsigned, S for signed
+    - Field size in bytes
+      The size followed by a B indicating it's the size in bytes
+   Example: U4B specifies an unsigned 4 byte field
+   If the field has no fixed size, then prefix Var is used
+
+ - Endianness prefix:
+   The prefix LE will be understood as little endian and BE for big endian.
+   If nothing specified, big endian is used.
+
+When naming classes, also a special convention will be used to specify the
+data type it's containing:
+ - Int: any number field, either positive or negative and size-independent
+ - Char: any character or bytes-composed field
 """
 
 # Libraries
 import struct
 from .model import Field
+from . import test
+from .helper import bfh
 
 # Integer types
+class U2BLEInt(Field):
+    """
+    Defines a Bitcoin protocol unsigned 2-byte integer field
+    """
+    name = "Unsigned 2-byte integer little-endian field (uint16_t)"
+    description = "16 bits without 2-complement sign"
+    def __len__(self):
+        return 2
+    def serialize(self):
+        return struct.pack('<H', self._value)
+    def deserialize(self, v):
+        self._value = struct.unpack('<H', v)[0]
+        return self
+    def __str__(self):
+        return "0x{0:02x}".format(self._value)
+
+
 class S4BLEInt(Field):
     """
     Defines a Bitcoin protocol signed 4-byte integer field
@@ -152,62 +191,32 @@ class VarLEChar(Field):
         self._value = bytes(rw_value)
         return self
 
-def serialize_tests(deserialized, serialized, cls):
-    """
-    Given a serialized value and a checked deserialized value, checks against
-    the class if the serialization and deserialization methods are properly
-    implemented or raises a ValueError
-
-    Args:
-        deserialized (object): python object corresponding to serialized bytes
-        serialized (bytes): serialized properly bytes
-        cls (class): python class to check against
-
-    Raises:
-        ValueError if serialization or deserialization fails
-    """
-    # Serialization test
-    if isinstance(deserialized, bytes):
-        print(" Serializing the value", deserialized.hex())
-    else:
-        print(" Serializing the value", "0x{0:02x}".format(deserialized))
-    serialized_guess = cls(deserialized).serialize()
-    if serialized_guess != serialized:
-        raise ValueError("Serialization failed: "+serialized_guess.hex()+\
-                         " != "+serialized.hex())
-    # Deserialization test
-    print(" Deserializing the value", serialized.hex())
-    deserialized_guess = cls().deserialize(serialized).value
-    if deserialized_guess != deserialized:
-        raise ValueError("Deserialization failed: "+\
-                         "0x{0:02x}".format(deserialized_guess)+\
-                         " != "+"0x{0:02x}".format(deserialized))
-def tests():
-    """
-    Function to test all int size-fixed values
-    """
-    cases = [(3, b'\x03\0\0\0', S4BLEInt),
-             (3, b'\x03\0\0\0', U4BLEInt),
-             (1000000, b'\x40\x42\x0f\0\0\0\0\0', U8BLEInt),
-             (7, b'\x07\0\0\0\0\0\0\0', U8BLEInt),
-             (0xF0, bytes().fromhex("f0"), VarInt),
-             (0xF0F1, bytes().fromhex("fdf1f0"), VarInt),
-             (0xFD, bytes().fromhex("fdfd00"), VarInt),
-             (0xF0F1F2F3, bytes().fromhex("fef3f2f1f0"), VarInt),
-             (0xF0F1F2F3F4F5F6F7, bytes().fromhex("fff7f6f5f4f3f2f1f0"),
-              VarInt),
-             (bytes().fromhex("""21f10dbfb0ff49e2853629517fa176dc00d943f203aa"""
-                              """e3511288a7dd89280ac2"""),
-              bytes().fromhex("""c20a2889dda7881251e3aa03f243d900dc76a17f5129"""
-                              """3685e249ffb0bf0df121"""), VarLEChar),
-            ]
-
-    print("Starting serialization test")
-    for case in cases:
-        print("Testing", case[2].__name__, "class.")
-        serialize_tests(*case)
-
-    print("Tests passed")
 # Classes tests
 if __name__ == "__main__":
-    tests()
+    # Define test cases
+    CASES = [
+        (0xf0f1, bfh("f1f0"), U2BLEInt),
+        (-0x11223344, bfh("BCCCDDEE"), S4BLEInt),
+        (0xf0f1f2f3, bfh("f3f2f1f0"), U4BLEInt),
+        (1000000, bfh("40420f0000000000"), U8BLEInt),
+        (0xf0f1f2f3f4f5f6f7, bfh("f7f6f5f4f3f2f1f0"), U8BLEInt),
+        (0xf0, bfh("f0"), VarInt),
+        (0xf0f1, bfh("fdf1f0"), VarInt),
+        (0xfD, bfh("fdfd00"), VarInt),
+        (0xf0f1f2f3, bfh("fEf3f2f1f0"), VarInt),
+        (0xf0f1f2f3f4f5f6f7, bfh("fff7f6f5f4f3f2f1f0"),
+         VarInt),
+        (bfh("""21f10dbfb0ff49e2853629517fa176dc00d943f203aae3511288a7dd8928"""
+             """0ac2"""),
+         bfh("""c20a2889dda7881251e3aa03f243d900dc76a17f51293685e249ffb0bf0d"""
+             """f121"""), VarLEChar),
+    ]
+    # Run tests
+    print("Starting serialization test")
+    for case in CASES:
+        print("-> Testing", case[2].__name__, "class.")
+        print("      ", end='')
+        test.serialization(*case)
+        print("      ", end='')
+        test.deserialization(*case)
+    print("Tests passed")
