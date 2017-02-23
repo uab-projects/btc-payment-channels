@@ -1,119 +1,13 @@
 # -*- coding: utf-8 -*-
 """
-Defines several data structures used in low-level bitcoin for carrying data
-in the protocol as fields in transactions, blocks...
+Defines data fields used in transactions.
 
-Classes defined here are only used inside the app to provide easy storage and
-serialization, it's not inteded to use for the app user. This way, this classes
-provided here should only be used to create data structure that will deal with
-Python data types and may use this classes just to store them, knowing that
-they will also provide serialization methods.
-
-The following classes allow to deal with low-level data providing methods to
-easily handle the data in fields and providing methods to transform them into
-an array of bytes compatible with the Bitcoin standards definition and
-vice-versa
-
-For convention purposes, we'll use special notation when naming classes.
-These prefixes may be applied:
-
- - Size prefix:
-   Some fields have a fixed size. In this case, a prefix is added with the
-   following components:
-    - If the field has sign or not
-      U for unsigned, S for signed
-    - Field size in bytes
-      The size followed by a B indicating it's the size in bytes
-   Example: U4B specifies an unsigned 4 byte field
-   If the field has no fixed size, then prefix Var is used
-
- - Endianness prefix:
-   The prefix LE will be understood as little endian and BE for big endian.
-   If nothing specified, big endian is used.
-
-When naming classes, also a special convention will be used to specify the
-data type it's containing:
- - Int: any number field, either positive or negative and size-independent
- - Str: any string field
-
-Classes are added as needed so maybe many possible fields may exist in the
-Bitcoin protocol but not available here because it's not used anywhere.
+See model class for more information about naming
 """
 
 # Libraries
 import struct
-from interfaces import Serializable
-
-
-# Data type model
-class Field(Serializable):
-    """
-    Defines a model for what every defined field should provide. It should
-    provide a variable where to store the value for the field, methods for its
-    serialization and deserialization, a method to know the size in bytes and
-    optionally a name and description for documentation and educational
-    purposes
-
-    The name and description should be class variables as all instances of same
-    class will share their meaning. In some cases, though, name and description
-    could be tied to the instance
-
-    Attributes:
-        value: value of the field, that can handle multiple data types
-    """
-    __slots__ = ["_value"]
-
-    def __init__(self, value=None):
-        """
-        Initializes the field and assigns it a value, or None if no value is
-        entered (useful for deserialization)
-
-        Args:
-            value: value to set the field to
-        """
-        self._value = value
-
-    @property
-    def value(self):
-        """
-        Returns the field value, as is
-
-        Returns:
-            the value of the field, usable in Python (not a bytes object!)
-        """
-        return self._value
-
-    @value.setter
-    def value(self, value):
-        """
-        Saves a new value into the field
-
-        Args:
-            value: the new value to set into the field
-
-        Raises:
-            ValueError: if the value can't be saved in this field
-        """
-        self._value = value
-
-    def __len__(self):
-        """
-        Returns the size of the field in bytes, with the content that is present
-        in the value if the size is variable for the field.
-
-        By default, serializes and returns the bytes object length
-
-        Returns:
-            int: number of bytes the serialized field would occupy
-        """
-        return len(self.serialize())
-
-    def serialize(self):
-        raise NotImplementedError("""Class should have implemented this, but"""
-                                  """ developers of the app aren't so fast""")
-    def deserialize(self, data):
-        raise NotImplementedError("""Class should have implemented this, but"""
-                                  """ developers of the app aren't so fast""")
+from .model import Field
 
 # Integer types
 class S4BLEInt(Field):
@@ -273,7 +167,7 @@ def serialize_tests(deserialized, serialized, cls):
         ValueError if serialization or deserialization fails
     """
     # Serialization test
-    if type(deserialized) == bytes:
+    if isinstance(deserialized, bytes):
         print(" Serializing the value", deserialized.hex())
     else:
         print(" Serializing the value", "0x{0:02x}".format(deserialized))

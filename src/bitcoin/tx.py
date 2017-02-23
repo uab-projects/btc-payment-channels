@@ -18,8 +18,8 @@ about it
 """
 
 # Libraries
-from interfaces import Serializable
-from fields import S4BLEInt, U4BLEInt, VarInt
+from .interfaces import Serializable
+from .field.tx import S4BLEInt, U4BLEInt, VarInt
 
 # Constants
 DEFAULT_VERSION = 1

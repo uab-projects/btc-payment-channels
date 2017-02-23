@@ -4,11 +4,13 @@ args:
  - "src"
 sh: true
 targets:
-    test-class-tx:
+    test-tx:
         cmd: "python"
         args:
-         - "bitcoin/tx.py"
-    test-class-field:
+         - "-m"
+         - "src.bitcoin.tx"
+    test-tx-field:
         cmd: "python"
         args:
-         - "bitcoin/fields.py"
+         - "-m"
+         - "src.bitcoin.field.tx"
