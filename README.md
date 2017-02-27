@@ -32,5 +32,5 @@ __Fields:__
 
 ### License
 
-***Made with love in [ETSE](https://uab.cat/enginyeria), UAB by @ccebrecos & @davidlj***
+***<> with ♥ in [ETSE](https://uab.cat/enginyeria), UAB by @ccebrecos & @davidlj***
 <center><img src="http://www.uab.cat/doc/logo-UAB.png" width="100" alt="UAB Logotype"></center>
