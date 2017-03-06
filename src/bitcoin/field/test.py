@@ -5,6 +5,7 @@ Bitcoin protocol standards
 # Libraries
 from .helper import value_to_hex
 
+
 # Test classes
 def serialization(deserialized, serialized, cls):
     """
@@ -26,9 +27,10 @@ def serialization(deserialized, serialized, cls):
     serialized_guess = cls(deserialized).serialize()
     # Check it
     if serialized_guess != serialized:
-        raise ValueError("Serialization failed: "+\
-                          value_to_hex(serialized_guess)+\
+        raise ValueError("Serialization failed: " +
+                         value_to_hex(serialized_guess) +
                          " has to be "+value_to_hex(serialized))
+
 
 def deserialization(deserialized, serialized, cls):
     """
@@ -47,9 +49,10 @@ def deserialization(deserialized, serialized, cls):
     print("Deserializing the value", value_to_hex(serialized))
     deserialized_guess = cls().deserialize(serialized).value
     if deserialized_guess != deserialized:
-        raise ValueError("Deserialization failed: "+\
-                         value_to_hex(deserialized_guess) + " has to be "+\
+        raise ValueError("Deserialization failed: " +
+                         value_to_hex(deserialized_guess) + " has to be " +
                          value_to_hex(deserialized))
+
 
 def serialize_deserialize(*args):
     """

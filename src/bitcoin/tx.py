@@ -46,6 +46,7 @@ And as the feature of sequence is disabled, this is always 0
 http://bitcoin.stackexchange.com/questions/2025/what-is-txins-sequence
 """
 
+
 class Tx(Serializable):
     """
     Model of generic Bitcoin transaction, with a version field, inputs, outputs
@@ -66,14 +67,15 @@ class Tx(Serializable):
         and locktime.
 
         Args:
-            version (int): version of the transaction (default specified in params)
+            version (int): version of the transaction (default specified in
+            params)
             inputs (list): list of inputs (as Input objects) to be spent
             outputs (list): list of outputs (as Output objects) to be spent
             locktime (int): time when the transaction will be valid
         """
         self._version = S4BLEInt(version)
-        self._inputs = inputs if inputs != None else []
-        self._outputs = outputs if outputs != None else []
+        self._inputs = inputs if inputs is not None else []
+        self._outputs = outputs if outputs is not None else []
         self._locktime = U4BLEInt(locktime)
 
     def serialize(self):
@@ -134,14 +136,14 @@ class Tx(Serializable):
         offset += 4
         if offset != len(data):
             raise ValueError("""Serialization finished, but there's still """
-                             """data to handle. Offset is at byte %d"""%offset)
+                             """data to handle. Offset is at byte %d""" %
+                             offset)
         # Do assignations
         self._version = version
         self._inputs = inputs
         self._outputs = outputs
         self._locktime = locktime
         return self
-
 
     @property
     def version(self):

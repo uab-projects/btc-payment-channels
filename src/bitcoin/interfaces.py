@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-Defines functional models as interfaces to specify the functionality some classes must provide.
+Defines functional models as interfaces to specify the functionality some
+classes must provide.
 """
 
 # Libraries
 from abc import ABCMeta, abstractmethod
+
 
 class Serializable(object):
     """

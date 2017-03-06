@@ -31,6 +31,7 @@ from .model import Field
 from . import test
 from .helper import bfh
 
+
 # Integer types
 class U2BLEInt(Field):
     """
@@ -38,13 +39,17 @@ class U2BLEInt(Field):
     """
     name = "Unsigned 2-byte integer little-endian field (uint16_t)"
     description = "16 bits without 2-complement sign"
+
     def __len__(self):
         return 2
+
     def serialize(self):
         return struct.pack('<H', self._value)
+
     def deserialize(self, v):
         self._value = struct.unpack('<H', v)[0]
         return self
+
     def __str__(self):
         return "0x{0:02x}".format(self._value)
 
@@ -55,15 +60,20 @@ class S4BLEInt(Field):
     """
     name = "Signed 4-byte integer little-endian field (int32_t)"
     description = "32 bits with 2-complement sign"
+
     def __len__(self):
         return 4
+
     def serialize(self):
         return struct.pack('<l', self._value)
+
     def deserialize(self, v):
         self._value = struct.unpack('<l', v)[0]
         return self
+
     def __str__(self):
         return "0x{0:02x}".format(self._value)
+
 
 class U4BLEInt(Field):
     """
@@ -71,15 +81,20 @@ class U4BLEInt(Field):
     """
     name = "Unsigned 4-byte integer little-endian field (uint32_t)"
     description = "32 bits without 2-complement sign"
+
     def __len__(self):
         return 4
+
     def serialize(self):
         return struct.pack('<L', self._value)
+
     def deserialize(self, v):
         self._value = struct.unpack('<L', v)[0]
         return self
+
     def __str__(self):
         return "0x{0:02x}".format(self._value)
+
 
 class U8BLEInt(Field):
     """
@@ -87,13 +102,17 @@ class U8BLEInt(Field):
     """
     name = "Unsigned 8-byte integer little-endian field (uint64_t)"
     description = "64 bits without 2-complement sign"
+
     def serialize(self):
         return struct.pack('<Q', self._value)
+
     def deserialize(self, v):
         self._value = struct.unpack('<Q', v)[0]
         return self
+
     def __str__(self):
         return "0x{0:02x}".format(self._value)
+
 
 class VarInt(Field):
     """
@@ -118,6 +137,7 @@ class VarInt(Field):
     BYTE_LIMIT = 0xFC
     name = "Bitcoin variable-length unsigned little-endian integer"
     description = "Allows to save an integer with variable size (1 to 9 bytes)"
+
     @classmethod
     def translate_size(cls, first_byte):
         """
@@ -134,8 +154,8 @@ class VarInt(Field):
         Returns:
             int: the size of the variable integer
         """
-        return 2**(first_byte - cls.BYTE_LIMIT) if first_byte > cls.BYTE_LIMIT \
-        else 0
+        return 2**(first_byte - cls.BYTE_LIMIT) if first_byte > cls.BYTE_LIMIT\
+            else 0
 
     def __len__(self):
         if self._value <= self.BYTE_LIMIT:
@@ -146,6 +166,7 @@ class VarInt(Field):
             return 5
         else:
             return 9
+
     def serialize(self):
         if self._value <= self.BYTE_LIMIT:
             return struct.pack('<B', self._value)
@@ -155,6 +176,7 @@ class VarInt(Field):
             return struct.pack('<BL', self.BYTE_LIMIT+2, self._value)
         else:
             return struct.pack('<BQ', self.BYTE_LIMIT+3, self._value)
+
     def deserialize(self, v):
         size = self.translate_size(v[0])
         if size == 0:
@@ -169,8 +191,10 @@ class VarInt(Field):
             raise ValueError("""Length of the deserialize variable integer """
                              """must be 1, 3, 5 or 9 bytes""")
         return self
+
     def __str__(self):
         return "0x{0:02x}".format(self._value)
+
 
 # Character classes
 class VarLEChar(Field):
@@ -179,17 +203,21 @@ class VarLEChar(Field):
     """
     name = "Bitcoin variable-length unsigned little-endian character array"
     description = "Allows to save a variable-length character array in LE"
+
     def __len__(self):
         return len(self._value)
+
     def serialize(self):
         rw_value = bytearray(self._value)
         rw_value.reverse()
         return bytes(rw_value)
+
     def deserialize(self, v):
         rw_value = bytearray(v)
         rw_value.reverse()
         self._value = bytes(rw_value)
         return self
+
 
 # Classes tests
 if __name__ == "__main__":

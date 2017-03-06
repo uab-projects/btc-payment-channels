@@ -6,6 +6,7 @@ Defines a model for all bitcoin protocol fields
 # Libraries
 from ..interfaces import Serializable
 
+
 # Data type model
 class Field(Serializable):
     """
@@ -59,8 +60,8 @@ class Field(Serializable):
 
     def __len__(self):
         """
-        Returns the size of the field in bytes, with the content that is present
-        in the value if the size is variable for the field.
+        Returns the size of the field in bytes, with the content that is
+        present in the value if the size is variable for the field.
 
         By default, serializes and returns the bytes object length
 
@@ -72,6 +73,7 @@ class Field(Serializable):
     def serialize(self):
         raise NotImplementedError("""Class should have implemented this, but"""
                                   """ developers of the app aren't so fast""")
+
     def deserialize(self, data):
         raise NotImplementedError("""Class should have implemented this, but"""
                                   """ developers of the app aren't so fast""")

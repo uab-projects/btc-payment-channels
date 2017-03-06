@@ -3,13 +3,14 @@ Defines fields that can appear in a script, including OP_CODES from opcode
 module.
 """
 # Libraries
-# pylint: disable=W0401,W0614,E1101
 import math
 from .model import Field
 from .general import U2BLEInt, U4BLEInt
-from .opcode import *
+from .opcode import OP_PUSHDATA_MIN, OP_PUSHDATA_MAX, OP_PUSHDATA1, \
+    OP_PUSHDATA2, OP_PUSHDATA4, OP_PUSHDATA_MAX_BYTES
 from .helper import bfh
 from . import test
+
 
 class StackDataField(Field):
     """
@@ -51,7 +52,7 @@ class StackDataField(Field):
         """
         # Get data as bytes
         serialized_data = self._value if isinstance(self._value, bytes) else \
-                          self._value.serialize()
+            self._value.serialize()
         # Get data length
         serialized_data_length = len(serialized_data)
         bytes_length_size = math.ceil(serialized_data_length.bit_length()/8)
@@ -103,7 +104,7 @@ class StackDataField(Field):
         # Variables
         data_size = 0
         opcode = data[0]
-        offset = 1 # the opcode to push data is not data
+        offset = 1  # the opcode to push data is not data
 
         # Check opcode
         if opcode >= OP_PUSHDATA_MIN and opcode <= OP_PUSHDATA_MAX:
@@ -120,12 +121,13 @@ class StackDataField(Field):
                 data_size = U4BLEInt().deserialize(data[offset:offset+4]).value
                 offset += 4
             else:
-                raise ValueError("""Data to deserialize has not an opcode to """
-                                 """push data to the stack""")
+                raise ValueError("""Data to deserialize has not an opcode to
+                                 push data to the stack""")
 
         # Resolve data
         self._value = data[offset:data_size+offset]
         return self
+
 
 # Module testing
 if __name__ == "__main__":
@@ -136,7 +138,8 @@ if __name__ == "__main__":
          StackDataField),
         (bfh("02"*0xffff), OP_PUSHDATA2.serialize()+bfh("ffff"+"02"*0xffff),
          StackDataField),
-        (bfh("04"*0xffffff), OP_PUSHDATA4.serialize()+bfh("ffffff00"+"04"*0xffffff),
+        (bfh("04"*0xffffff), OP_PUSHDATA4.serialize() +
+            bfh("ffffff00"+"04"*0xffffff),
          StackDataField)
     ]
     # Run tests

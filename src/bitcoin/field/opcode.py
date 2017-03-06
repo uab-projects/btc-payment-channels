@@ -4,6 +4,7 @@ OP_CODES instances in the application """
 # Libraries
 from .model import Field
 
+
 class Opcode(Field):
     """
     Defines a Bitcoin OP_CODE interface
@@ -15,8 +16,9 @@ class Opcode(Field):
         self._value = value[0]
         return self
 
+
 # Constants
-## Opcodes that mean push the following bytes to the stack
+# Opcodes that mean push the following bytes to the stack
 OP_PUSHDATA_MIN = 0x01
 """
     int: when represented as a byte, all numbers from this value to
@@ -85,7 +87,7 @@ OP_HASH160 = type('OP_HASH160', (Opcode,), {
 OP_CODESEPARATOR = type('OP_CODESEPARATOR', (Opcode,), {
     "name": "OP_CODESEPARATOR",
     "description": """All of the signature checking words will only match
-    signatures to the data after the most recently-executed OP_CODESEPARATOR."""
+    signatures to the data after the most recently-executed OP_CODESEPARATOR"""
 })(169)
 
 OP_CS = OP_CHECKSIG = type('OP_CHECKSIG', (Opcode,), {
@@ -101,12 +103,13 @@ OP_CMS = OP_CHECKMULTISIG = type('OP_CHECKMULTISIG', (Opcode,), {
     "description": """Compares the first signature against each public key until
     it finds an ECDSA match. Starting with the subsequent public key, it
     compares the second signature against each remaining public key until it
-    finds an ECDSA match. The process is repeated until all signatures have been
-    checked or not enough public keys remain to produce a successful result. All
-    signatures need to match a public key. Because public keys are not checked
-    again if they fail any signature comparison, signatures must be placed in
-    the scriptSig using the same order as their corresponding public keys were
-    placed in the scriptPubKey or 2 redeemScript. If all signatures are valid, 1
-    is returned, 0 otherwise. Due to a bug, one extra unused value is removed
-    from the stack."""
+    finds an ECDSA match. The process is repeated until all signatures have
+    been checked or not enough public keys remain to produce a successful
+    result.
+    All signatures need to match a public key. Because public keys are not
+    checked again if they fail any signature comparison, signatures must be
+    placed in the scriptSig using the same order as their corresponding
+    public keys were placed in the scriptPubKey or 2 redeemScript. If all
+    signatures are valid, 1 is returned, 0 otherwise.
+    Due to a bug, one extra unused value is removed from the stack."""
 })(174)

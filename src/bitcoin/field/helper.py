@@ -12,6 +12,7 @@ HEX_STR_LEN_MAX = 200
     int: Defines the maximum length of an hexa string to be converted
 """
 
+
 def bfh(hexa):
     """
     Little helper that converts a string of hex-digits into a bytes object
@@ -22,6 +23,7 @@ def bfh(hexa):
         bytes: byte object with the contents of the hex string
     """
     return bytes().fromhex(hexa)
+
 
 def value_to_hex(value):
     """
