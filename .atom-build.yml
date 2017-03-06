@@ -19,3 +19,8 @@ targets:
         args:
          - "-m"
          - "src.bitcoin.field.script"
+    test-address:
+        cmd: "python"
+        args:
+         - "-m"
+         - "src.bitcoin.address.address"
