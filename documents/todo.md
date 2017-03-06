@@ -1,7 +1,7 @@
 ## TO-DO
 
 **Fields**
-- [ ] opcode
+- [x] opcode
 - [ ] script
 
 **Scripting**
@@ -26,7 +26,7 @@
 
 ---
 
-- [ ] bitcoin/field/opcode.py
-- [ ] bitcoin/field/tx.py
-- [ ] bitcoin/field/script.py
+- [x] bitcoin/field/opcode.py
+- [x] bitcoin/field/general.py
+- [x] bitcoin/field/script.py
 - [ ] bitcoin/tx/script.py
