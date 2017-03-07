@@ -56,3 +56,52 @@ class Serializable(object):
         """
         raise NotImplementedError("""Class should have implemented this, but"""
                                   """ developers of the app aren't so fast""")
+
+
+class Encodable(object):
+    """
+    This interface defines that classes who inherit from it can be encoded into
+    an object and decoded from an object. The difference between the previous
+    class is that the serializable class is supposed to serialize to bytes
+    objects and be deserialized from them. An encodable class when encoded
+    contains enough information to then decode the output and obtain the same
+    information but with the difference that when encoding, the result is not
+    an array of bytes and is an object, most times a string.
+    """
+    __metaclass__ = ABCMeta
+
+    @abstractmethod
+    def encode(self):
+        """
+        Encodes the information of the class into an object so that this object
+        can be then decoded into another object of this class with the same
+        information
+
+        Returns:
+            object: object containing the encoded information of the class
+        """
+        pass
+
+    @abstractmethod
+    def decode(self, obj):
+        """
+        Decodes the object passed and tries to set the attributes and status of
+        the object according to the data the object passed contains
+
+        Args:
+            obj (object): object containing information to set class status
+
+        Returns:
+            self: the own object with the status filled (self)
+
+        Raises:
+            ValueError: if object passed can't be decoded
+        """
+        pass
+
+
+class Base58Encodable(Encodable):
+    """
+    Same as previous Encodable interface, but specifies that will be encoded
+    into a base58 string and decoded from a base58 string.
+    """
