@@ -26,6 +26,13 @@ class P2PKH(ScriptSig):
         # PubKey
         self._data.append(StackDataField())
 
+    def sign(self):
+        """
+        Due to there's needed a signature, this is the class where the sign
+        method should be. Already not decided how to implement that.
+        """
+        pass
+
 
 class P2SH(ScriptSig):
     """
@@ -41,3 +48,10 @@ class P2SH(ScriptSig):
         while 1:
             self._data.append(StackDataField())
         self._data.append(StackDataField(self._reedemScript))
+
+    def sign(self):
+        """
+        Due to there's needed a signature, this is the class where the sign
+        method should be. Already not decided how to implement that.
+        """
+        pass
