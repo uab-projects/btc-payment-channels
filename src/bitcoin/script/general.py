@@ -27,7 +27,6 @@ class Script(Serializable):
         Returns:
             bytes: data of the class serialized in a bytes object
         """
-        serialized = []
         serialized = [x.serialize() for x in self._data]
         return b''.join(serialized)
 
