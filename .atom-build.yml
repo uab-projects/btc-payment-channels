@@ -24,3 +24,8 @@ targets:
         args:
          - "-m"
          - "src.bitcoin.address.test"
+    test-tx-output:
+        cmd: "python"
+        args:
+         - "-m"
+         - "src.bitcoin.io.output.test"
