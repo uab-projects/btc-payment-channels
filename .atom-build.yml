@@ -23,4 +23,4 @@ targets:
         cmd: "python"
         args:
          - "-m"
-         - "src.bitcoin.address.address"
+         - "src.bitcoin.address.test"

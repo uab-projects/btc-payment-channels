@@ -5,21 +5,8 @@ according if they belong to the testnet or to the mainnet
 Prefixes extracted from:
     https://en.bitcoin.it/wiki/List_of_address_prefixes
 """
-from enum import Enum, unique
 from ..nets import Network
-
-
-@unique
-class Types(Enum):
-    """
-    Defines the types a Bitcoin address can be
-    """
-    unknown = -1
-    p2pkh = 1
-    p2sh = 2
-    wif_pkey = 3
-    bip32_pubkey = 4
-    bip32_pkey = 5
+from .types import Types
 
 
 class Prefixes(object):
@@ -154,16 +141,59 @@ class TestNetPrefixes(Prefixes):
         self._bip32_pkey = b'\x04\x35\x83\x94'
 
 
-def create_networks_prefixes():
+# Constants
+PREFIXES_BY_NETWORK = {
+    Network.mainnet: MainNetPrefixes(),
+    Network.testnet: TestNetPrefixes()
+}
+"""
+    dict: lists all networks and its address prefixes
+"""
+
+
+# Methods
+def get(network, address_type):
     """
-    Generates a Python dictionary containing for each Network defined in
-    the nets module with available prefixes a prefixes object with the prefixes
-    for addresses in that network
+    Given the network and the type of address, returns the prefix to use for
+    the address
+
+    Args:
+        network (Network): network for the address
+        address_type (Types): type of the address
 
     Returns:
-        dict: dictionary with networks as keys and prefixes objects as values
+        bytes: bytes containing the prefix for the address
+
+    Raises:
+        AttributeError: if address type is invalid
     """
-    return {
-        Network.mainnet: MainNetPrefixes(),
-        Network.testnet: TestNetPrefixes()
-    }
+    assert PREFIXES_BY_NETWORK.get(network) is not None, """No addresses
+    available for that network"""
+    return getattr(PREFIXES_BY_NETWORK[network], address_type)
+
+
+def guess(address):
+    """
+    Given an address, tries to guess the network and type of the address and
+    returns a tuple containing them, or None if prefix can't be guessed.
+
+    Args:
+        address (bytes): address as bytes object to guess its prefix, and
+        thefore its type and network
+
+    Returns:
+        tuple: containing the network and type or None if prefix couldn't be
+        guessed
+    """
+    # Guess network and type
+    address_net = None
+    for network, prefixes in PREFIXES_BY_NETWORK.items():
+        address_type = prefixes.get_type(address)
+        if address_type != Types.unknown:
+            address_net = network
+            break
+    # Check if guessed
+    if address_net is None:
+        return None
+    else:
+        return address_net, address_type
