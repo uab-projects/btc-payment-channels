@@ -15,9 +15,9 @@ class TxInput(Serializable):
     A basic input for a transaction
 
     Attributes:
-        _utxoID (VarLEChar): the hash of the referenced transaction
-        _utxoN (U4BLEInt): the index of the specific output in the transaction
-        _scriptSig (): 	Computational Script for confirming transaction
+        _utxo_id (VarLEChar): the hash of the referenced transaction
+        _utxo_n (U4BLEInt): the index of the specific output in the transaction
+        _script ():	Computational Script for confirming transaction
         authorization
         _sequence (U4BLEInt): Transaction version as defined by the sender
     """
@@ -51,3 +51,36 @@ class TxInput(Serializable):
         Not implemented yet
         """
         pass
+
+    @property
+    def utxo_id(self):
+        """ Returns the hash of the referenced transaction """
+        return self._utxo_id
+
+    @property
+    def utxo_n(self):
+        """ Returns the index of the specific output in the transaction """
+        return self._utxo_n
+
+    @property
+    def script(self):
+        """ Returns the scriptsig """
+        return self._script
+
+    @script.setter
+    def script(self, script):
+        """ Sets the script, received as an instance of ScriptSig Class """
+        if isinstance(script, ScriptSig):
+            self._script = script
+        else:
+            raise ValueError("""Expected a ScriptSig instance""")
+
+    @property
+    def sequence(self):
+        """ Returns the Sequence value """
+        return self._sequence
+
+    @sequence.setter
+    def sequence(self, value):
+        """ Sets the sequence value """
+        self._sequence = U4BLEInt(value)
