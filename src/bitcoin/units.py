@@ -9,15 +9,15 @@ BTC_PER_SATOSHI = 100000000
 
 
 # Methods
-def btc_to_satoshi(self, value):
+def btc_to_satoshi(value):
     """
     Given a BTC value, transforms the value into satoshis and returns it
     """
-    return self.value * BTC_PER_SATOSHI
+    return int(value * BTC_PER_SATOSHI)
 
 
-def satoshi_to_btc(self, value):
+def satoshi_to_btc(value):
     """
     Given a satoshi value, transforms the value into BTC and returns it
     """
-    return self.value / BTC_PER_SATOSHI
+    return value / BTC_PER_SATOSHI
