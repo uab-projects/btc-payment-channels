@@ -50,3 +50,7 @@ class Script(Serializable):
             ValueError: if data can't be fit into the model
         """
         pass
+
+    def __len__(self):
+        """ Returns the size of the serialized script in bytes """
+        return len(self.serialize())
