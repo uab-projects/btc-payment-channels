@@ -225,6 +225,25 @@ class Tx(Serializable):
         """
         self._locktime.value = locktime
 
+    def add_input(self, tx_input):
+        """
+        Adds a transaction input to the inputs list
+
+        Args:
+            tx_input(TxInput): input to add to the list
+        """
+        self._inputs.append(tx_input)
+        tx_input.tx = self
+
+    def add_output(self, tx_output):
+        """
+        Adds a transaction output to the outputs list
+
+        Args:
+            tx_output(TxOutput): output to add to the list
+        """
+        self._outputs.append(tx_output)
+
     def __str__(self):
         """
         Prints the transaction in a beautiful, printable way

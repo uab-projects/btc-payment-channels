@@ -20,8 +20,9 @@ class TxInput(Serializable):
         _script ():	Computational Script for confirming transaction
         authorization
         _sequence (U4BLEInt): Transaction version as defined by the sender
+        _tx (Tx): Transaction where the current input belongs.
     """
-    __slots__ = ["_utxo_id", "_utxo_n", "_script", "_sequence"]
+    __slots__ = ["_utxo_id", "_utxo_n", "_script", "_sequence", "_tx"]
 
     def __init__(self, utxoID, utxoN, sequence=0xffffffff):
         self._utxo_id = VarLEChar(utxoID)
@@ -84,3 +85,13 @@ class TxInput(Serializable):
     def sequence(self, value):
         """ Sets the sequence value """
         self._sequence = U4BLEInt(value)
+
+    @property
+    def tx(self):
+        """ Returns the transaction where the input belongs"""
+        return self._tx
+
+    @tx.setter
+    def tx(self, trans):
+        """ Sets the transaction reference """
+        self._tx = trans
