@@ -15,7 +15,7 @@ PREFIX_SIZE = 1
 """
 PKH_SIZE = 20
 """
-    int: size in bytes of all public key hashss
+    int: size in bytes of all public key hashes
 """
 CHECKSUM_SIZE = 4
 """
