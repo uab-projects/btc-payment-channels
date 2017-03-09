@@ -1,4 +1,6 @@
 ## TO-DO
+### Testing
+ - [ ] Test transaction P2PKH using our software
 ### General level
  - [x] `src.address.address`
      - [x] Address class to generate an adress from base58 string and bytes object
