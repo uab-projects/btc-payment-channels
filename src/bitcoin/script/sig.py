@@ -5,7 +5,7 @@ https://bitcoin.org/en/developer-guide#standard-transactions
 from .general import Script
 from ..field.script import StackDataField
 from .hashcodes import Types
-from bitcoin import deserialize, signature_form, privkey_to_pubkey, \
+from pybitcointools import deserialize, signature_form, privkey_to_pubkey,\
                     pubkey_to_address, mk_pubkey_script, ecdsa_tx_sign
 
 

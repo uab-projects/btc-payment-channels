@@ -5,7 +5,7 @@ or more of those inputs.
 The low-level specification of the input is there:
 https://en.bitcoin.it/wiki/Protocol_documentation#tx
 """
-from ..field.interfaces import Serializable
+from ..interfaces import Serializable
 from ..field.general import U4BLEInt, VarLEChar, VarInt
 from ..script.sig import ScriptSig
 
