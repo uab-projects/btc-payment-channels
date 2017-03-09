@@ -1,6 +1,9 @@
 """
 Defines a class to model a P2SH address, this means, adding extra methods to
 set the reedem script and generate the address automatically
+
+Information extracted from:
+http://www.soroushjp.com/2014/12/20/bitcoin-multisig-the-hard-way-understanding-raw-multisignature-bitcoin-transactions/
 """
 # Libraries
 from .model import AddressType
