@@ -1,19 +1,11 @@
 """
-More information could be found in:
-https://bitcoin.org/en/developer-guide#standard-transactions
+Models a P2PKH scriptSig script, autobuilding the necessary opcodes to create
+the P2PKH
 """
-from .general import Script
+# Libraries
+from .model import ScriptSig
 from ..field.script import StackDataField
-from .hashcodes import Types
-from bitcoin import deserialize, signature_form, privkey_to_pubkey, \
-                    pubkey_to_address, mk_pubkey_script, ecdsa_tx_sign
-
-
-class ScriptSig(Script):
-    """
-    """
-    def __init__(self):
-        super().__init__()
+from ..hashcodes import Types
 
 
 class P2PKH(ScriptSig):
@@ -53,16 +45,18 @@ class P2PKH(ScriptSig):
             key (): private key to sign the transaction related to that script
             specified in hex.
         """
-        pub = privkey_to_pubkey(key)
-        address = pubkey_to_address(pub)
-        idx = self._input.tx.inputs.index(self._input)
+        # pub = privkey_to_pubkey(key)
+        # address = pubkey_to_address(pub)
+        # idx = self._input.tx.inputs.index(self._input)
 
-        serialized_tx = self._input.tx.serialize()
-        tx = deserialize(serialized_tx)
-        tx = signature_form(tx, idx, mk_pubkey_script(address), self._hashcode)
+        # serialized_tx = self._input.tx.serialize()
+        # tx = deserialize(serialized_tx)
+        # tx = signature_form(tx, idx, mk_pubkey_script(address),
+        # self._hashcode)
 
-        self._signature = ecdsa_tx_sign(tx, key, self._hashcode)
-        self._build(pub)
+        # self._signature = ecdsa_tx_sign(tx, key, self._hashcode)
+        # self._build(pub)
+        pass
 
     @property
     def hashcode(self):
@@ -73,26 +67,3 @@ class P2PKH(ScriptSig):
         """ Sets the hashcode to specify how the signature is done. """
         # Update values
         self._hashcode = hashcode
-
-
-class P2SH(ScriptSig):
-    """
-    """
-    __slots__ = ["_reedemScript"]
-
-    def __init__(self, reedemScript):
-        self._reedemScript = reedemScript
-        self._build()
-
-    def _build(self):
-        # Signature(s)
-        while 1:
-            self._data.append(StackDataField())
-        self._data.append(StackDataField(self._reedemScript))
-
-    def sign(self):
-        """
-        Due to there's needed a signature, this is the class where the sign
-        method should be. Already not decided how to implement that.
-        """
-        pass
