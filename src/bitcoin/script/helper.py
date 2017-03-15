@@ -4,9 +4,8 @@ from .sig import ScriptSig
 from .hashcodes import Types
 from .pubkey import P2PKH
 from .. import address
-from ecdsa import SigningKey, SECP256k1
-from bitcoin import base58
 from bitcoin.main import ecdsa_sign
+import base64
 
 
 def prepare_tx_to_sign(tx, idx, pub_key,  hashcode=None):
@@ -19,11 +18,8 @@ def prepare_tx_to_sign(tx, idx, pub_key,  hashcode=None):
         pub_key (): public key to pay
         hashcode (int): type of the signature to do
     """
-    print("Transaction is: ", tx)
     if hashcode is None or hashcode == Types.sighash_all:
         newtx = copy.deepcopy(tx)
-
-        print("The copy is: ", newtx)
         for inp in newtx.inputs:
             inp.script = ScriptSig()
         pub_key_bytes = bytes().fromhex(pub_key)
@@ -43,9 +39,8 @@ def sign_tx(tx, priv_key, hashcode=None):
     # Creation of the key
     wif_address = address.WIF()
     wif_address.decode(priv_key)
-    print(base58.decode(priv_key).hex())
-    print(wif_address.value.hex())
-    print(wif_address.private_key.hex())
     sig = ecdsa_sign(tx.serialize(), wif_address.private_key.hex())
+
+    sig = base64.b64decode(sig)
 
     return sig

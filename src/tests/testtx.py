@@ -11,7 +11,7 @@ if __name__ == "__main__":
     key = sys.argv[1]
 
     # Input data
-    tx_id = "192b1a770e62c46474bec5195f73698a1b991fe6f6d262af43f45ec12080671b"
+    tx_id = bytes().fromhex("192b1a770e62c46474bec5195f73698a1b991fe6f6d262af43f45ec12080671b")
     tx_n = 0
 
     # Output data
@@ -34,9 +34,10 @@ if __name__ == "__main__":
     # Add input
     in_0 = TxInput(tx_id, tx_n)
     transaction.add_input(in_0)
-    print("Trans before the signature stage: ", transaction.serialize().hex())
+    print("Tx before sign", transaction)
 
     scriptsig = P2PKH(in_0)
     scriptsig.sign(key)
 
-    print("keolñgjselhfeahguieshugireh", transaction.serialize().hex())
+    print("Tx after sign", transaction)
+    print(transaction.serialize().hex())

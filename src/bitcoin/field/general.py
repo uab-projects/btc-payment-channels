@@ -208,7 +208,7 @@ class VarLEChar(Field):
         return len(self._value)
 
     def serialize(self):
-        rw_value = bytearray(self._value, 'utf8')
+        rw_value = bytearray(self._value)
         rw_value.reverse()
         return bytes(rw_value)
 

@@ -252,12 +252,16 @@ class Tx(Serializable):
             str: String containing a human-readable transaction
         """
         txt = "Tx Transaction\n"
-        txt += " - version: %d\n" % self._version.value
-        txt += " - numberOfInputs: %d\n" % len(self._inputs)
+        txt += " - version: %d (%s)\n" % \
+            (self._version.value, self._version.serialize())
+        txt += " - [numberOfInputs]: %d (%s)\n" % \
+            (len(self._inputs), VarInt(len(self._inputs)).serialize())
         txt += " - inputs: %s\n" % [str(x) for x in self._inputs]
-        txt += " - numberOfOutputs: %d\n" % len(self._outputs)
+        txt += " - [numberOfOutputs]: %d (%s)\n" % \
+            (len(self._outputs), VarInt(len(self._outputs)).serialize())
         txt += " - outputs: %s\n" % [str(x) for x in self._outputs]
-        txt += " - locktime: %d\n" % (self._locktime.value)
+        txt += " - locktime: %d (%s)\n" % \
+            (self._locktime.value, self._locktime.serialize())
         return txt
 
     def __eq__(self, other):

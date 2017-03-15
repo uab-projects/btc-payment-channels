@@ -26,6 +26,7 @@ class P2PKH(ScriptSig):
     def __init__(self, tx_input):
         super().__init__()
         self._input = tx_input
+        self._input.script = self
         self._hashcode = Types.sighash_all
         self._signature = bytes()
 
@@ -60,8 +61,7 @@ class P2PKH(ScriptSig):
                                 self._hashcode)
 
         self._signature = sign_tx(tx, key)
-        self._build(pub)
-        pass
+        self._build(bytes().fromhex(pub))
 
     @property
     def hashcode(self):

@@ -36,10 +36,8 @@ class TxInput(Serializable):
         serialized.append(self._utxo_id.serialize())
         # Add utxo index number
         serialized.append(self._utxo_n.serialize())
-        # Calculate the script length
-        scriptlen = VarInt(len(self._script))
         # Add the script length
-        serialized.append(scriptlen.serialize())
+        serialized.append(VarInt(len(self._script)).serialize())
         # Add script
         serialized.append(self._script.serialize())
         # Add the sequence
@@ -100,4 +98,11 @@ class TxInput(Serializable):
         Returns:
             str: String containing a hex input
         """
-        return self.serialize().hex()
+        inp = "\n"
+        inp += " Outpoint: %s %s \n" % (self._utxo_id.serialize().hex(),
+                                        self._utxo_n.serialize().hex())
+        inp += " Script Len: %s \n" % VarInt(len(self._script)).serialize().hex()
+        inp += " Script: %s \n" % self._script.serialize().hex()
+        inp += " Sequence: %s \n" % self._sequence.serialize().hex()
+
+        return inp
