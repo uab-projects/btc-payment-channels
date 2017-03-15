@@ -17,7 +17,7 @@ def prepare_tx_to_sign(tx, idx, pub_key,  hashcode=None):
         pub_key (): public key to pay
         hashcode (int): type of the signature to do
     """
-    if hashcode is None or hashcode == Types.sighashall:
+    if hashcode is None or hashcode == Types.sighash_hall:
         newtx = copy.deepcopy(tx)
 
         for inp in newtx.inputs:

@@ -8,6 +8,7 @@ The code is written in _Python 3_, and requires some libraries (available in [_P
 The following libraries are required for the software to run:
  - bitcoinlib
  - ecdsa
+ - [pycoin](https://github.com/richardkiss/pycoin)
 
 
 ### Running the application

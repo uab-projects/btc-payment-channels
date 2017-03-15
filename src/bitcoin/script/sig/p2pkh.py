@@ -6,6 +6,9 @@ the P2PKH
 from .model import ScriptSig
 from ..field.script import StackDataField
 from ..hashcodes import Types
+from ..helper import sign_tx, prepare_tx_to_sign
+from pybitcointools import privkey_to_pubkey, pubkey_to_address, \
+                           mk_pubkey_script, deserialize
 
 
 class P2PKH(ScriptSig):
@@ -45,17 +48,17 @@ class P2PKH(ScriptSig):
             key (): private key to sign the transaction related to that script
             specified in hex.
         """
-        # pub = privkey_to_pubkey(key)
-        # address = pubkey_to_address(pub)
-        # idx = self._input.tx.inputs.index(self._input)
+        pub = privkey_to_pubkey(key)
+        address = pubkey_to_address(pub)
+        idx = self._input.tx.inputs.index(self._input)
 
-        # serialized_tx = self._input.tx.serialize()
-        # tx = deserialize(serialized_tx)
-        # tx = signature_form(tx, idx, mk_pubkey_script(address),
-        # self._hashcode)
+        serialized_tx = self._input.tx.serialize()
+        tx = deserialize(serialized_tx)
+        tx = prepare_tx_to_sign(tx, idx, mk_pubkey_script(address),
+                                self._hashcode)
 
-        # self._signature = ecdsa_tx_sign(tx, key, self._hashcode)
-        # self._build(pub)
+        self._signature = sign_tx(tx, key)
+        self._build(pub)
         pass
 
     @property
