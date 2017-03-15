@@ -7,6 +7,7 @@ The code is written in _Python 3_, and requires some libraries (available in [_P
 #### Required
 The following libraries are required for the software to run:
  - bitcoinlib
+ - ecdsa
 
 
 ### Running the application
