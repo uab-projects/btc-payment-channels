@@ -37,7 +37,7 @@ class TxInput(Serializable):
         # Add utxo index number
         serialized.append(self._utxo_n.serialize())
         # Calculate the script length
-        scriptlen = VarInt(len(self._scriptSig))
+        scriptlen = VarInt(len(self._script))
         # Add the script length
         serialized.append(scriptlen.serialize())
         # Add script
@@ -95,3 +95,12 @@ class TxInput(Serializable):
     def tx(self, trans):
         """ Sets the transaction reference """
         self._tx = trans
+
+    def __str__(self):
+        """
+        Prints the input in a useful, printable way
+
+        Returns:
+            str: String containing a hex input
+        """
+        return self.serialize().hex()

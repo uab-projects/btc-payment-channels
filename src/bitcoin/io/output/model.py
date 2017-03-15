@@ -77,3 +77,12 @@ class TxOutput(Serializable):
     def script(self, script):
         """ Sets the output script """
         self._script = script
+
+    def __str__(self):
+        """
+        Prints the output in a useful, printable way
+
+        Returns:
+            str: String containing a hex output
+        """
+        return self.serialize().hex()

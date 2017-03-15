@@ -254,9 +254,9 @@ class Tx(Serializable):
         txt = "Tx Transaction\n"
         txt += " - version: %d\n" % self._version.value
         txt += " - numberOfInputs: %d\n" % len(self._inputs)
-        txt += " - inputs:\n"
+        txt += " - inputs: %s\n" % [str(x) for x in self._inputs]
         txt += " - numberOfOutputs: %d\n" % len(self._outputs)
-        txt += " - outputs:\n"
+        txt += " - outputs: %s\n" % [str(x) for x in self._outputs]
         txt += " - locktime: %d\n" % (self._locktime.value)
         return txt
 
