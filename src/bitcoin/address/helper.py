@@ -2,7 +2,7 @@
 Methods that ease computation of common values in addresses, like the checksum
 """
 # Libraries
-from hashlib import sha256
+from hashlib import sha256, new
 
 # Constants
 DOUBLESHA256_CHECKSUM_SIZE = 4
@@ -12,6 +12,21 @@ DOUBLESHA256_CHECKSUM_SIZE = 4
 
 
 # Methods
+def ripemd160_sha256(value):
+    """
+    Given a value in bytes, calculates its ripemd(sha256(value)) and
+    returns it
+    Args:
+        value (bytes): bytes to calculate the checksum against
+
+    Returns:
+        bytes: 20-byte hash result
+    """
+    ripemd = new("ripemd160")
+    ripemd.update(sha256(value).digest())
+    return ripemd.digest()
+
+
 def doublesha256_checksum(value):
     """
     Given a value in bytes, calculates its checksum and returns it, cutting the

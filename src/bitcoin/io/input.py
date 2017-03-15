@@ -71,10 +71,7 @@ class TxInput(Serializable):
     @script.setter
     def script(self, script):
         """ Sets the script, received as an instance of ScriptSig Class """
-        if isinstance(script, ScriptSig):
-            self._script = script
-        else:
-            raise ValueError("""Expected a ScriptSig instance""")
+        self._script = script
 
     @property
     def sequence(self):

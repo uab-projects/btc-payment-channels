@@ -34,7 +34,9 @@ if __name__ == "__main__":
     # Add input
     in_0 = TxInput(tx_id, tx_n)
     transaction.add_input(in_0)
+    print("Trans before the signature stage: ", transaction.serialize().hex())
+
     scriptsig = P2PKH(in_0)
     scriptsig.sign(key)
 
-    print(Tx.serialize().hex())
+    print("keolñgjselhfeahguieshugireh", transaction.serialize().hex())

@@ -7,7 +7,7 @@ get the public key hash from the address using the data property
 from .model import AddressType
 from .types import Types
 from .helper import DOUBLESHA256_CHECKSUM_SIZE, doublesha256_checksum,\
-    doublesha256_checksum_validate
+    doublesha256_checksum_validate, ripemd160_sha256
 
 # Constants
 PREFIX_SIZE = 1
@@ -48,6 +48,23 @@ class P2PKH(AddressType):
         """ Same as Address constructor, but setting correct type """
         super().__init__(Types.p2pkh)
         self._pkh = bytes()
+
+    @classmethod
+    def from_public_key(cls, pk):
+        """
+        Given a public key, returns a filled address with the public key hash
+        calculated and properly set
+
+        Args:
+            pk (bytes): public key bytes
+
+        Returns:
+            P2PKH: P2PKH address instance containing the public key hash
+        """
+        pkh = ripemd160_sha256(pk)
+        address = cls()
+        address.pkh = pkh
+        return address
 
     def deserialize(self, address):
         """

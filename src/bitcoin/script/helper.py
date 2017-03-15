@@ -3,8 +3,10 @@ import copy
 from .sig import ScriptSig
 from .hashcodes import Types
 from .pubkey import P2PKH
+from .. import address
 from ecdsa import SigningKey, SECP256k1
-import hashlib
+from bitcoin import base58
+from bitcoin.main import ecdsa_sign
 
 
 def prepare_tx_to_sign(tx, idx, pub_key,  hashcode=None):
@@ -24,9 +26,10 @@ def prepare_tx_to_sign(tx, idx, pub_key,  hashcode=None):
         print("The copy is: ", newtx)
         for inp in newtx.inputs:
             inp.script = ScriptSig()
-
-        script_to_pay = P2PKH
-        script_to_pay.address = pub_key
+        pub_key_bytes = bytes().fromhex(pub_key)
+        print(pub_key_bytes, len(pub_key_bytes))
+        script_to_pay = P2PKH()
+        script_to_pay.address = address.P2PKH.from_public_key(pub_key_bytes)
         newtx.inputs[idx].script = script_to_pay
 
     else:
@@ -38,12 +41,11 @@ def prepare_tx_to_sign(tx, idx, pub_key,  hashcode=None):
 def sign_tx(tx, priv_key, hashcode=None):
     # SECP256k1 is the Bitcoin elliptic curve
     # Creation of the key
-    sk = SigningKey.from_string(priv_key, curve=SECP256k1,
-                                hashfunc=hashlib.sha256)
-    sig = sk.sign(tx.serialize())
-
-    # Verification of the signature
-    vk = sk.get_verifying_key()
-    vk.verify(sig, tx.serialize())
+    wif_address = address.WIF()
+    wif_address.decode(priv_key)
+    print(base58.decode(priv_key).hex())
+    print(wif_address.value.hex())
+    print(wif_address.private_key.hex())
+    sig = ecdsa_sign(tx.serialize(), wif_address.private_key.hex())
 
     return sig
