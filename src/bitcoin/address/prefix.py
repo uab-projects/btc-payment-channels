@@ -18,11 +18,11 @@ class Prefixes(object):
     Attributes:
         p2pkh (bytes): prefix for pubkey hash addresses
         p2sh (bytes): prefix for pay-to-script hash addresses
-        wif_pkey (bytes): prefix for WIF private key / pubkey
+        wif (bytes): prefix for WIF private key / pubkey
         bip32_pubkey (bytes): prefix for BIP32 public keys
         bip32_pkey (bytes): prefix for BIP32 private keys
     """
-    __slots__ = ["_p2pkh", "_p2sh", "_wif_pkey", "_bip32_pubkey",
+    __slots__ = ["_p2pkh", "_p2sh", "_wif", "_bip32_pubkey",
                  "_bip32_pkey"]
 
     def __init__(self):
@@ -31,7 +31,7 @@ class Prefixes(object):
         """
         self._p2pkh = None
         self._p2sh = None
-        self._wif_pkey = None
+        self._wif = None
         self._bip32_pubkey = None
         self._bip32_pkey = None
 
@@ -66,8 +66,8 @@ class Prefixes(object):
             return Types.p2pkh
         elif self._check_type(address, self._p2sh):
             return Types.p2sh
-        elif self._check_type(address, self._wif_pkey):
-            return Types.wif_pkey
+        elif self._check_type(address, self._wif):
+            return Types.wif
         elif self._check_type(address, self._bip32_pubkey):
             return Types.bip32_pubkey
         elif self._check_type(address, self._bip32_pkey):
@@ -86,9 +86,9 @@ class Prefixes(object):
         return self._p2sh
 
     @property
-    def wif_pkey_u(self):
-        """ Returns the wif_pkey attribute """
-        return self._wif_pkey
+    def wif(self):
+        """ Returns the wif attribute """
+        return self._wif
 
     @property
     def bip32_pubkey(self):
@@ -103,7 +103,7 @@ class Prefixes(object):
     @property
     def all_prefixes(self):
         """ Returns a list with all prefixes """
-        return self._p2pkh + self._p2sh + self._wif_pkey + \
+        return self._p2pkh + self._p2sh + self._wif + \
             self._bip32_pubkey + self._bip32_pkey
 
 
@@ -119,7 +119,7 @@ class MainNetPrefixes(Prefixes):
         super().__init__()
         self._p2pkh = b'\x00'
         self._p2sh = b'\x05'
-        self._wif_pkey = b'\x80'
+        self._wif = b'\x80'
         self._bip32_pubkey = b'\x04\x88\xB2\x1E'
         self._bip32_pkey = b'\x04\x88\xAD\xE4'
 
@@ -136,7 +136,7 @@ class TestNetPrefixes(Prefixes):
         super().__init__()
         self._p2pkh = b'\x6F'
         self._p2sh = b'\xC4'
-        self._wif_pkey = b'\xEF'
+        self._wif = b'\xEF'
         self._bip32_pubkey = b'\x04\x35\x87\xCF'
         self._bip32_pkey = b'\x04\x35\x83\x94'
 

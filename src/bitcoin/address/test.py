@@ -7,6 +7,7 @@ from ..nets import Network
 from .prefix import Types
 from .model import Address
 from .p2pkh import P2PKH
+from .wif import WIF
 
 
 # Constants
@@ -16,7 +17,9 @@ CASES = [
     ("mgcjJSFdTZSajvW2RqYAzHjf9RgmL3BQZ4",
      Network.testnet, Types.p2pkh),
     ("2NByaYwku2jFiaUhgnJxo3s695G5v6dzNBf",
-     Network.testnet, Types.p2sh)
+     Network.testnet, Types.p2sh),
+    ("5JePNVcofSQgVoLtkLVwDsRsoUgyBKFJa8q17XRUsikDnjDH1Tt",
+     Network.mainnet, Types.wif)
 ]
 """
     dict: test cases, containing a real address, and the supposed network and
@@ -76,6 +79,31 @@ if __name__ == "__main__":
             print("        -> Got prefix: %s" % address_obj.prefix.hex())
             print("        -> Got pkh: %s (%d-byte)" % (address_obj.pkh.hex(),
                                                         len(address_obj.pkh)))
+            print("        -> Got checksum: %s (%d-byte)" % (
+                address_obj.checksum.hex(), len(address_obj.checksum)))
+            if address_obj.encode() == address_str:
+                print("        -> Test pass")
+            else:
+                raise ValueError("""Unable to encode address %s from its network
+                and public key hash""" % (address_str))
+        elif address_type == Types.wif:
+            print("    -> Specific WIF test")
+            print("        -> Decoding WIF address: ", end='')
+            address_obj = WIF().decode(address_str)
+            print("pass")
+            address_pkey = address_obj.private_key
+            address_checksum = address_obj.checksum
+            print("        -> Guessed private key: %s (%d-byte)" % (
+                address_pkey.hex(), len(address_pkey)))
+            print("        -> Guessed checksum: %s (%d-byte)" % (
+                address_checksum.hex(), len(address_checksum)))
+            print("        -> Encoding WIF address: ")
+            address_obj = WIF()
+            address_obj.network = net
+            address_obj.private_key = address_pkey
+            print("        -> Got prefix: %s" % address_obj.prefix.hex())
+            print("        -> Got private key: %s (%d-byte)" % (
+                address_obj.private_key.hex(), len(address_obj.private_key)))
             print("        -> Got checksum: %s (%d-byte)" % (
                 address_obj.checksum.hex(), len(address_obj.checksum)))
             if address_obj.encode() == address_str:

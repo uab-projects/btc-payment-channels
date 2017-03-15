@@ -4,9 +4,10 @@ validate the checksum when deserializing or decoding and properties to later
 get the public key hash from the address using the data property
 """
 # Libraries
-from hashlib import sha256
 from .model import AddressType
 from .types import Types
+from .helper import DOUBLESHA256_CHECKSUM_SIZE, doublesha256_checksum,\
+    doublesha256_checksum_validate
 
 # Constants
 PREFIX_SIZE = 1
@@ -17,7 +18,7 @@ PKH_SIZE = 20
 """
     int: size in bytes of all public key hashes
 """
-CHECKSUM_SIZE = 4
+CHECKSUM_SIZE = DOUBLESHA256_CHECKSUM_SIZE
 """
     int: size in bytes for the address suffix checksum
 """
@@ -25,46 +26,6 @@ ADDRESS_SIZE = PREFIX_SIZE + PKH_SIZE + CHECKSUM_SIZE
 """
     int: size in byte of the P2PKH addresses
 """
-
-
-# Methods
-def calculate_checksum(pkh, prefix):
-    """
-    Given a public key hash as an array of bytes, and the prefix to use for the
-    it to create an address, calculates its checksum and returns it
-
-    Value property is overwritten
-
-    Args:
-        pkh (bytes): bytes object containing the public key hash
-        prefix (bytes): bytes object containing the address prefix
-
-    Returns:
-        bytes: 4-byte address checksum to append to the end of the address
-    """
-    # Check checksum
-    return sha256(sha256(prefix + pkh).digest()).digest()[:CHECKSUM_SIZE]
-
-
-def validate_checksum(pkh, prefix, checksum):
-    """
-    Checks if the given public key hash with the given prefix has the passed
-    checksum or raises an Exception if not
-
-    Args:
-        prefix (bytes): prefix to use for the pkh address as bytes object
-        pkh (bytes): public key hash bytes
-        checksum (bytes): supposed checksum
-
-    Raises:
-        ValueError: if checksum doesn't match calculated checksum
-    """
-    # Check checksum
-    guess_checksum = calculate_checksum(pkh, checksum)
-    if guess_checksum != checksum:
-        raise ValueError("""P2PKH Address has invalid checksum. Calculated
-            checksum is %s, given is %s""" % (guess_checksum.hex(),
-                                              checksum.hex()))
 
 
 # Classes
@@ -130,7 +91,7 @@ class P2PKH(AddressType):
     def value(self):
         """ Returns the value by calculating the checksum and prepending public
         key hash """
-        return self._pkh + calculate_checksum(self._pkh, self._prefix)
+        return self._pkh + doublesha256_checksum(self._prefix + self._pkh)
 
     @value.setter
     def value(self, value):
@@ -150,7 +111,7 @@ class P2PKH(AddressType):
         pkh = value[:-CHECKSUM_SIZE]
         checksum = value[-CHECKSUM_SIZE:]
         # Test checksum
-        validate_checksum(pkh, self._prefix, checksum)
+        doublesha256_checksum_validate(self._prefix + self._pkh, checksum)
         # Save
         self._value = value
         self._pkh = pkh
