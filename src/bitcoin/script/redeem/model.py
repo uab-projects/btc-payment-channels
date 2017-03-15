@@ -3,10 +3,10 @@ Interface for reedem scripts used in P2SH modes
 """
 # Libraries
 import hashlib
-from .general import Script
+from ..general import Script
 
 
-class ReedemScript(Script):
+class RedeemScript(Script):
     """
     Models a general reedem script, allowing to hash it to include it in a
     P2SH address

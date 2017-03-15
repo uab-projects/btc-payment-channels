@@ -4,7 +4,7 @@ import sys
 from ..bitcoin.tx import Tx
 from ..bitcoin.io.input import TxInput
 from ..bitcoin.io.output import p2pkh
-from ..script.sig import P2PKH
+from ..bitcoin.script.sig import P2PKH
 
 
 if __name__ == "__main__":

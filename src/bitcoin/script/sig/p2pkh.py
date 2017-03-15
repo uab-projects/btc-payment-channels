@@ -4,11 +4,11 @@ the P2PKH
 """
 # Libraries
 from .model import ScriptSig
-from ..field.script import StackDataField
+from ...field.script import StackDataField
 from ..hashcodes import Types
 from ..helper import sign_tx, prepare_tx_to_sign
-from pybitcointools import privkey_to_pubkey, pubkey_to_address, \
-                           mk_pubkey_script, deserialize
+from bitcoin import transaction
+from bitcoin import main as buter
 
 
 class P2PKH(ScriptSig):
@@ -48,13 +48,13 @@ class P2PKH(ScriptSig):
             key (): private key to sign the transaction related to that script
             specified in hex.
         """
-        pub = privkey_to_pubkey(key)
-        address = pubkey_to_address(pub)
+        pub = buter.privkey_to_pubkey(key)
+        address = buter.pubkey_to_address(pub)
         idx = self._input.tx.inputs.index(self._input)
 
         serialized_tx = self._input.tx.serialize()
-        tx = deserialize(serialized_tx)
-        tx = prepare_tx_to_sign(tx, idx, mk_pubkey_script(address),
+        tx = transaction.deserialize(serialized_tx)
+        tx = prepare_tx_to_sign(tx, idx, buter.mk_pubkey_script(address),
                                 self._hashcode)
 
         self._signature = sign_tx(tx, key)

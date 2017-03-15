@@ -3,9 +3,9 @@ Models a Bitcoin scriptPubKey for the P2SH method
 """
 # Libraries
 from .model import ScriptPubKey
-from .. import address
-from ..field.opcode import OP_HASH160, OP_EQUAL
-from ..field.script import StackDataField
+from ... import address
+from ...field.opcode import OP_HASH160, OP_EV
+from ...field.script import StackDataField
 
 
 class P2SH(ScriptPubKey):
@@ -33,7 +33,7 @@ class P2SH(ScriptPubKey):
         """
         self._data.append(OP_HASH160)
         self._data.append(StackDataField(self._address.script_hash))
-        self._data.append(OP_EQUAL)
+        self._data.append(OP_EV)
 
     def serialize(self):
         """

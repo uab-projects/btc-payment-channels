@@ -4,7 +4,7 @@ according to the address sent, that will detect if it's a P2SH, P2PKH,...
 """
 # Libraries
 from ..general import Script
-from .. import address
+from ... import address
 
 
 class ScriptPubKey(Script):

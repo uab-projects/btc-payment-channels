@@ -3,9 +3,9 @@ Models a Bitcoin scriptPubKey for the P2PKH payment method
 """
 # Libraries
 from .model import ScriptPubKey
-from .. import address
-from ..field.opcode import OP_DUP, OP_HASH160, OP_EQUALVERIFY, OP_CHECKSIG
-from ..field.script import StackDataField
+from ... import address
+from ...field.opcode import OP_DUP, OP_HASH160, OP_EQUALVERIFY, OP_CHECKSIG
+from ...field.script import StackDataField
 
 
 class P2PKH(ScriptPubKey):
