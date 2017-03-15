@@ -27,12 +27,13 @@ if __name__ == "__main__":
 
     # Add outputs
     out_0 = p2pkh(value, address_rcv)
-    transaction.addOutput(out_0)
+    transaction.add_output(out_0)
     out_1 = p2pkh(value_return, address_return)
-    transaction.addOutput(out_1)
+    transaction.add_output(out_1)
 
     # Add input
     in_0 = TxInput(tx_id, tx_n)
+    transaction.add_input(in_0)
     scriptsig = P2PKH(in_0)
     scriptsig.sign(key)
 

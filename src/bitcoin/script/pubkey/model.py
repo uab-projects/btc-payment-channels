@@ -23,6 +23,7 @@ class ScriptPubKey(Script):
         """
         Initializes an empty scriptPubKey with an empty address
         """
+        super().__init__()
         self._address = address.Address()
 
     @property

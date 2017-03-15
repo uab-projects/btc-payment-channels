@@ -24,8 +24,9 @@ class P2PKH(ScriptSig):
     __slots__ = ["_input", "_hashcode", "_signature"]
 
     def __init__(self, tx_input):
+        super().__init__()
         self._input = tx_input
-        self._hashcode = Types.signhash_all
+        self._hashcode = Types.sighash_all
         self._signature = bytes()
 
     def _build(self, pub):
@@ -50,11 +51,12 @@ class P2PKH(ScriptSig):
         """
         pub = buter.privkey_to_pubkey(key)
         address = buter.pubkey_to_address(pub)
-        idx = self._input.tx.inputs.index(self._input)
+        idx = 0  # self._input.tx.inputs.index(self._input)
 
         serialized_tx = self._input.tx.serialize()
-        tx = transaction.deserialize(serialized_tx)
-        tx = prepare_tx_to_sign(tx, idx, buter.mk_pubkey_script(address),
+        tx = self._input.tx
+        # tx = transaction.deserialize(serialized_tx)
+        tx = prepare_tx_to_sign(tx, idx, transaction.mk_pubkey_script(address),
                                 self._hashcode)
 
         self._signature = sign_tx(tx, key)

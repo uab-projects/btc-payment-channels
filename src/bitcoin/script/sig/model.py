@@ -10,4 +10,5 @@ class ScriptSig(Script):
     """
     Defines a basic ScriptSig interface
     """
-    pass
+    def __init__(self):
+        super().__init__()

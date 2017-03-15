@@ -17,13 +17,15 @@ def prepare_tx_to_sign(tx, idx, pub_key,  hashcode=None):
         pub_key (): public key to pay
         hashcode (int): type of the signature to do
     """
-    if hashcode is None or hashcode == Types.sighash_hall:
+    print("Transaction is: ", tx)
+    if hashcode is None or hashcode == Types.sighash_all:
         newtx = copy.deepcopy(tx)
 
+        print("The copy is: ", newtx)
         for inp in newtx.inputs:
             inp.script = ScriptSig()
 
-        script_to_pay = P2PKH()
+        script_to_pay = P2PKH
         script_to_pay.address = pub_key
         newtx.inputs[idx].script = script_to_pay
 
