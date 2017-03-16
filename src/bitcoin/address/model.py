@@ -186,6 +186,8 @@ class AddressType(Address):
         """
         super().__init__()
         self._type = address_type
+        self._network = Network.testnet
+        self._prefix = prefix.get(self._network, self._type.name)
 
     @property
     def network(self):

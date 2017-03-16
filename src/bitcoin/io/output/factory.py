@@ -22,6 +22,7 @@ def p2pkh(btc_value, btc_address):
     """
     pubkey = script.pubkey.P2PKH()
     pubkey.address = address.P2PKH().decode(btc_address)
+    print(pubkey.address.prefix.hex())
     tx_output = TxOutput()
     tx_output.btc = btc_value
     tx_output.script = pubkey
