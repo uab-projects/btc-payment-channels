@@ -40,4 +40,5 @@ if __name__ == "__main__":
     scriptsig.sign(key)
 
     print("Tx after sign", transaction)
+    print(" Final result, ready to be part of the network: \n\n")
     print(transaction.serialize().hex())
