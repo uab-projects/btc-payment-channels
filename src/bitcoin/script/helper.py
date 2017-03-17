@@ -12,25 +12,24 @@ import base64
 from bitcoin.core.script import SignatureHash
 
 
-def prepare_tx_to_sign(tx, idx, pub_key,  hashcode=None):
+def prepare_tx_to_sign(tx, idx, addr,  hashcode=None):
     """
     Prepares the transation in order to sign it
 
     Args:
         tx (Tx): transaction to sign
         idx (int): index of the utxo in the previous transaction
-        pub_key (): public key to pay
+        addr (Adress): public key hash to receive the money
         hashcode (int): type of the signature to do
     """
     if hashcode is None or hashcode == Types.sighash_all:
         newtx = copy.deepcopy(tx)
         for inp in newtx.inputs:
             inp.script = ScriptSig()
-        pub_key_bytes = bytes().fromhex(pub_key)
 
         script_to_pay = P2PKH()
-        script_to_pay.address = address.P2PKH.from_public_key(pub_key_bytes)
-        print(script_to_pay.serialize())
+        script_to_pay.address = addr
+
         newtx.inputs[idx].script = script_to_pay
 
     else:
@@ -45,8 +44,11 @@ def sign_tx(tx, priv_key, hashcode=None):
     wif_address = address.WIF()
     wif_address.decode(priv_key)
 
-    v, r, s = ecdsa_raw_sign(tx.serialize(), wif_address.private_key.hex())
+    v, r, s = ecdsa_raw_sign(electrum_sig_hash(tx.serialize()),
+                             priv_key)
     sig_hex = der_encode_sig(v, r, s)
+    print(sig_hex, len(sig_hex))
+    print("signature len: ", len(bytes().fromhex(sig_hex)+b'\x01'))
     return bytes().fromhex(sig_hex)+b'\x01'
 
 

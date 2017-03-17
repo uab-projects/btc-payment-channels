@@ -12,6 +12,7 @@ from ...address.helper import ripemd160_sha256
 from bitcoin import transaction
 from bitcoin import main as buter
 from bitcoin import base58
+from ..pubkey import P2PKH as scp2pkh
 
 
 class P2PKH(ScriptSig):
@@ -55,22 +56,39 @@ class P2PKH(ScriptSig):
             specified in hex.
         """
         pub = buter.privkey_to_pubkey(key)
-        address_buteriana = buter.pubkey_to_address(pub)
         idx = 0  # self._input.tx.inputs.index(self._input)
 
-        serialized_tx = self._input.tx.serialize()
+        addr = address.P2PKH()
+        addr.pkh = ripemd160_sha256(bytes().fromhex(pub))
+
         tx = self._input.tx
-        # tx = transaction.deserialize(serialized_tx)
-        tx = prepare_tx_to_sign(tx, idx, transaction.mk_pubkey_script(address_buteriana),
-                                self._hashcode)
+
+        script_to_pay = scp2pkh()
+        script_to_pay.address = addr
+        print(script_to_pay.serialize().hex())
+        print(transaction.deserialize(tx.serialize()))
+
+        tx_buter = transaction.signature_form(tx.serialize(), 0, script_to_pay.serialize().hex())
+
+
+        tx = prepare_tx_to_sign(tx, idx, addr, self._hashcode)
+
+
+
+        print("===============================")
+        print(tx)
+        print(tx_buter)
+        print("===============================")
+
+
 
         self._signature = sign_tx(tx, key)
         # is pubkey correct?
-        addr = address.P2PKH()
-        addr.pkh = ripemd160_sha256(bytes().fromhex(pub))
-        print("pubkey hash we know", base58.decode("mm6ttcEZgXxi3HGGJeh3sgUzfWGEiotRdv")[1:-4].hex())
+
+        print("pubkey hash we know",
+               base58.decode("mm6ttcEZgXxi3HGGJeh3sgUzfWGEiotRdv")[1:-4].hex())
         print("pubkey hash address", addr.pkh.hex())
-        print("my address",addr.encode())
+        print("my address", addr.encode())
         self._build(bytes().fromhex(pub))
 
     @property
