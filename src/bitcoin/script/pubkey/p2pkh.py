@@ -56,3 +56,10 @@ class P2PKH(ScriptPubKey):
         be a P2PKH address object """
         self._address = new_address
         self._data[2].value = self._address.pkh
+
+    def __str__(self):
+        """
+        Returns a printable script
+        """
+        return "OP_DUP OP_HASH160 %s OP_EQUALVERIFY OP_CHECKSIG" % \
+            (self._address.pkh.hex())

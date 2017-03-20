@@ -10,7 +10,7 @@ from ..helper import sign_tx, prepare_tx_to_sign
 from ... import address
 from ...address.helper import ripemd160_sha256
 from bitcoin import main as buter
-from ..pubkey import P2PKH as scp2pkh
+from .. import pubkey
 
 
 class P2PKH(ScriptSig):
@@ -23,7 +23,7 @@ class P2PKH(ScriptSig):
         _hashcode (): the hashcode that specefies which signature to do
         _signature (bytes): ecdsa signature for the input and transaction
     """
-    __slots__ = ["_input", "_hashcode", "_signature"]
+    __slots__ = ["_input", "_hashcode", "_signature", "_pubkey"]
 
     def __init__(self, tx_input):
         super().__init__()
@@ -31,8 +31,9 @@ class P2PKH(ScriptSig):
         self._input.script = self
         self._hashcode = Types.sighash_all
         self._signature = bytes()
+        self._pubkey = bytes()
 
-    def _build(self, pub):
+    def _build(self):
         """
         Sets the data values with the proper signature once it's done and the
         public key where the btc's go
@@ -42,7 +43,7 @@ class P2PKH(ScriptSig):
         """
         # <signature> <pub_key>
         self._data = [StackDataField(self._signature),
-                      StackDataField(pub)]
+                      StackDataField(self._pubkey)]
 
     def sign(self, key):
         """
@@ -55,19 +56,15 @@ class P2PKH(ScriptSig):
         """
         pub = buter.privkey_to_pubkey(key)
         idx = 0  # self._input.tx.inputs.index(self._input)
-
         addr = address.P2PKH()
         addr.pkh = ripemd160_sha256(bytes().fromhex(pub))
-
         tx = self._input.tx
-
-        script_to_pay = scp2pkh()
+        script_to_pay = pubkey.P2PKH()
         script_to_pay.address = addr
-
         tx = prepare_tx_to_sign(tx, idx, addr, self._hashcode)
-
         self._signature = sign_tx(tx, key)
-        self._build(bytes().fromhex(pub))
+        self._pubkey = bytes().fromhex(pub)
+        self._build()
 
     @property
     def hashcode(self):
@@ -78,3 +75,10 @@ class P2PKH(ScriptSig):
         """ Sets the hashcode to specify how the signature is done. """
         # Update values
         self._hashcode = hashcode
+
+    def __str__(self):
+        """
+        Returns the scriptSig in a printable way
+        """
+        return "<signature=%s> <pubkey=%s>" % \
+            (self._signature.hex(), self._pubkey.hex())

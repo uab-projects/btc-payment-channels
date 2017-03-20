@@ -98,11 +98,12 @@ class TxInput(Serializable):
         Returns:
             str: String containing a hex input
         """
-        inp = "\n"
-        inp += " Outpoint: %s %s \n" % (self._utxo_id.serialize().hex(),
-                                        self._utxo_n.serialize().hex())
-        inp += " Script Len: %s \n" % VarInt(len(self._script)).serialize().hex()
-        inp += " Script: %s \n" % self._script.serialize().hex()
-        inp += " Sequence: %s \n" % self._sequence.serialize().hex()
+        inp = ""
+        inp += "\t - previous_tx:   %s\n" % self._utxo_id.serialize().hex()
+        inp += "\t - output_num:    %s\n" % self._utxo_n.serialize().hex()
+        inp += "\t - [script_size]: %s\n" % \
+            VarInt(len(self._script)).serialize().hex()
+        inp += "\t - script:        %s\n" % str(self._script)
+        inp += "\t - sequence:      %s \n" % self._sequence.serialize().hex()
 
         return inp

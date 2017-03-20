@@ -253,15 +253,25 @@ class Tx(Serializable):
         """
         txt = "Tx Transaction\n"
         txt += " - version: %d (%s)\n" % \
-            (self._version.value, self._version.serialize())
+            (self._version.value, self._version.serialize().hex())
         txt += " - [numberOfInputs]: %d (%s)\n" % \
-            (len(self._inputs), VarInt(len(self._inputs)).serialize())
-        txt += " - inputs: %s\n" % [str(x) for x in self._inputs]
+            (len(self._inputs), VarInt(len(self._inputs)).serialize().hex())
+        txt += " - inputs:\n"
+        i = 0
+        for tx_in in self._inputs:
+            txt += "\t-- input %02d --\n" % i
+            txt += str(tx_in)
+            i += 1
         txt += " - [numberOfOutputs]: %d (%s)\n" % \
-            (len(self._outputs), VarInt(len(self._outputs)).serialize())
-        txt += " - outputs: %s\n" % [str(x) for x in self._outputs]
+            (len(self._outputs), VarInt(len(self._outputs)).serialize().hex())
+        txt += " - outputs:\n" % [str(x) for x in self._outputs]
+        i = 0
+        for tx_out in self._outputs:
+            txt += "\t-- output %02d --\n" % i
+            txt += str(tx_out)
+            i += 1
         txt += " - locktime: %d (%s)\n" % \
-            (self._locktime.value, self._locktime.serialize())
+            (self._locktime.value, self._locktime.serialize().hex())
         return txt
 
     def __eq__(self, other):
