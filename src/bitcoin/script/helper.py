@@ -5,7 +5,7 @@ from .hashcodes import Types
 from .pubkey import P2PKH
 from .. import address
 from bitcoin.main import ecdsa_raw_sign
-from bitcoin.transaction import der_encode_sig
+from bitcoin.transaction import der_encode_sig, bin_txhash, ecdsa_tx_sign
 from hashlib import sha256
 from ..field.general import VarInt
 
@@ -73,10 +73,14 @@ def sign_tx(tx, priv_key, hashcode=None):
     wif_address = address.WIF()
     wif_address.decode(priv_key)
 
-    v, r, s = ecdsa_raw_sign(electrum_sig_hash(tx.serialize()+b'\x01'),
+    v, r, s = ecdsa_raw_sign(bin_txhash(tx.serialize(), 1),
                              priv_key)
     sig_hex = der_encode_sig(v, r, s)
 
     result = bytes().fromhex(sig_hex)+b'\x01'
+    print(result)
+    result = ecdsa_tx_sign(tx.serialize(), priv_key)
+    result = bytes().fromhex(result)
+    print(result)
 
     return result
