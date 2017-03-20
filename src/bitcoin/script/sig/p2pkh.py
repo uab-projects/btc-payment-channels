@@ -9,9 +9,7 @@ from ..hashcodes import Types
 from ..helper import sign_tx, prepare_tx_to_sign
 from ... import address
 from ...address.helper import ripemd160_sha256
-from bitcoin import transaction
 from bitcoin import main as buter
-from bitcoin import base58
 from ..pubkey import P2PKH as scp2pkh
 
 
@@ -65,30 +63,10 @@ class P2PKH(ScriptSig):
 
         script_to_pay = scp2pkh()
         script_to_pay.address = addr
-        print(script_to_pay.serialize().hex())
-        print(transaction.deserialize(tx.serialize()))
-
-        tx_buter = transaction.signature_form(tx.serialize(), 0, script_to_pay.serialize().hex())
-
 
         tx = prepare_tx_to_sign(tx, idx, addr, self._hashcode)
 
-
-
-        print("===============================")
-        print(tx)
-        print(tx_buter)
-        print("===============================")
-
-
-
         self._signature = sign_tx(tx, key)
-        # is pubkey correct?
-
-        print("pubkey hash we know",
-               base58.decode("mm6ttcEZgXxi3HGGJeh3sgUzfWGEiotRdv")[1:-4].hex())
-        print("pubkey hash address", addr.pkh.hex())
-        print("my address", addr.encode())
         self._build(bytes().fromhex(pub))
 
     @property
