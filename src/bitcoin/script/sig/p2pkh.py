@@ -9,10 +9,9 @@ from ..hashcodes import Types
 from ..helper import sign_tx, prepare_tx_to_sign
 from ... import address
 from ...address.helper import ripemd160_sha256
-from bitcoin import transaction
 from bitcoin import main as buter
-from bitcoin import base58
-from ..pubkey import P2PKH as scp2pkh
+from bitcoin import transaction
+from .. import pubkey
 
 
 class P2PKH(ScriptSig):
@@ -25,7 +24,7 @@ class P2PKH(ScriptSig):
         _hashcode (): the hashcode that specefies which signature to do
         _signature (bytes): ecdsa signature for the input and transaction
     """
-    __slots__ = ["_input", "_hashcode", "_signature"]
+    __slots__ = ["_input", "_hashcode", "_signature", "_pubkey"]
 
     def __init__(self, tx_input):
         super().__init__()
@@ -33,8 +32,9 @@ class P2PKH(ScriptSig):
         self._input.script = self
         self._hashcode = Types.sighash_all
         self._signature = bytes()
+        self._pubkey = bytes()
 
-    def _build(self, pub):
+    def _build(self):
         """
         Sets the data values with the proper signature once it's done and the
         public key where the btc's go
@@ -44,7 +44,7 @@ class P2PKH(ScriptSig):
         """
         # <signature> <pub_key>
         self._data = [StackDataField(self._signature),
-                      StackDataField(pub)]
+                      StackDataField(self._pubkey)]
 
     def sign(self, key):
         """
@@ -57,39 +57,36 @@ class P2PKH(ScriptSig):
         """
         pub = buter.privkey_to_pubkey(key)
         idx = 0  # self._input.tx.inputs.index(self._input)
-
         addr = address.P2PKH()
         addr.pkh = ripemd160_sha256(bytes().fromhex(pub))
-
         tx = self._input.tx
-
-        script_to_pay = scp2pkh()
+        script_to_pay = pubkey.P2PKH()
         script_to_pay.address = addr
-        print(script_to_pay.serialize().hex())
-        print(transaction.deserialize(tx.serialize()))
-
-        tx_buter = transaction.signature_form(tx.serialize(), 0, script_to_pay.serialize().hex())
-
-
         tx = prepare_tx_to_sign(tx, idx, addr, self._hashcode)
-
-
-
-        print("===============================")
+        print("======== Tx to sign ========")
         print(tx)
-        print(tx_buter)
-        print("===============================")
-
-
-
+        print(tx.serialize().hex())
+        print("======== Tx to sign according to vButerin ======")
+        tx_form_vbuter = transaction.signature_form(
+            tx.serialize(), 0, tx.inputs[0].script.serialize(),
+            0x01)
+        print(tx_form_vbuter.hex())
+        print("======== RESULT: %s" %
+              "They match" if tx_form_vbuter == tx.serialize()
+              else "Error, they don't match")
         self._signature = sign_tx(tx, key)
-        # is pubkey correct?
-
-        print("pubkey hash we know",
-               base58.decode("mm6ttcEZgXxi3HGGJeh3sgUzfWGEiotRdv")[1:-4].hex())
-        print("pubkey hash address", addr.pkh.hex())
-        print("my address", addr.encode())
-        self._build(bytes().fromhex(pub))
+        self._pubkey = bytes().fromhex(pub)
+        self._build()
+        print("======== Tx signed ========")
+        print(self._input.tx)
+        print(self._input.tx.serialize().hex())
+        print("======== Tx signed according to vButerin ======")
+        tx_sign_vbuter = transaction.sign(
+            self._input.tx.serialize().hex(), 0, key)
+        print(tx_sign_vbuter)
+        print("======== RESULT: %s" %
+              "They match" if tx_sign_vbuter == self._input.tx.serialize()
+              else "Error, they don't match")
 
     @property
     def hashcode(self):
@@ -100,3 +97,10 @@ class P2PKH(ScriptSig):
         """ Sets the hashcode to specify how the signature is done. """
         # Update values
         self._hashcode = hashcode
+
+    def __str__(self):
+        """
+        Returns the scriptSig in a printable way
+        """
+        return "<signature=%s> <pubkey=%s>" % \
+            (self._signature.hex(), self._pubkey.hex())

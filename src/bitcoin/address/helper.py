@@ -27,6 +27,23 @@ def ripemd160_sha256(value):
     return ripemd.digest()
 
 
+def doublesha256(value):
+    """
+    Given a value in bytes, calculates its checksum and returns it
+
+    Result is therefore:
+        sha256(sha256(value))
+
+    Args:
+        value (bytes): bytes to calculate the checksum against
+
+    Returns:
+        bytes: double sha256 checksum
+    """
+    # Check checksum
+    return sha256(sha256(value).digest()).digest()
+
+
 def doublesha256_checksum(value):
     """
     Given a value in bytes, calculates its checksum and returns it, cutting the
@@ -42,7 +59,7 @@ def doublesha256_checksum(value):
         bytes: 4-byte double sha256 checksum
     """
     # Check checksum
-    return sha256(sha256(value).digest()).digest()[:DOUBLESHA256_CHECKSUM_SIZE]
+    return doublesha256(value)[:DOUBLESHA256_CHECKSUM_SIZE]
 
 
 def doublesha256_checksum_validate(value, checksum):

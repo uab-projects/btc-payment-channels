@@ -6,10 +6,8 @@ from .pubkey import P2PKH
 from .. import address
 from bitcoin.main import ecdsa_raw_sign
 from bitcoin.transaction import der_encode_sig
-from ..address.helper import doublesha256_checksum
+from ..address.helper import doublesha256
 from ..field.general import VarInt
-import base64
-from bitcoin.core.script import SignatureHash
 
 
 def prepare_tx_to_sign(tx, idx, addr,  hashcode=None):
@@ -43,16 +41,16 @@ def sign_tx(tx, priv_key, hashcode=None):
     # Creation of the key
     wif_address = address.WIF()
     wif_address.decode(priv_key)
-
-    v, r, s = ecdsa_raw_sign(electrum_sig_hash(tx.serialize()),
+    v, r, s = ecdsa_raw_sign(electrum_sig_hash(tx.serialize()+b'\x01'),
                              priv_key)
+    print("our raw sig is")
+    print(v,r,s)
     sig_hex = der_encode_sig(v, r, s)
-    print(sig_hex, len(sig_hex))
-    print("signature len: ", len(bytes().fromhex(sig_hex)+b'\x01'))
-    return bytes().fromhex(sig_hex)+b'\x01'
+    sig = bytes().fromhex(sig_hex)+b'\x01'
+    return sig
 
 
 def electrum_sig_hash(message):
     padded = b"\x18Bitcoin Signed Message:\n" + \
         VarInt(len(message)).serialize() + message
-    return doublesha256_checksum(padded)
+    return doublesha256(padded)
