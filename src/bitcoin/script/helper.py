@@ -72,15 +72,8 @@ def sign_tx(tx, priv_key, hashcode=None):
     # Creation of the key
     wif_address = address.WIF()
     wif_address.decode(priv_key)
-
-    v, r, s = ecdsa_raw_sign(bin_txhash(tx.serialize(), 1),
-                             priv_key)
-    sig_hex = der_encode_sig(v, r, s)
-
-    result = bytes().fromhex(sig_hex)+b'\x01'
-    print(result)
-    result = ecdsa_tx_sign(tx.serialize(), priv_key)
-    result = bytes().fromhex(result)
-    print(result)
+    # Signature
+    sig = ecdsa_tx_sign(tx.serialize(), priv_key)
+    result = bytes().fromhex(sig)
 
     return result
