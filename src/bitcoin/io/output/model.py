@@ -41,7 +41,8 @@ class TxOutput(Serializable):
         serialized = [item.serialize() for item in serializable]
         return b''.join(serialized)
 
-    def deserialize(self):
+    @classmethod
+    def deserialize(cls, data):
         """
         Deserializes an array of bytes that is supposed to represent an
         output

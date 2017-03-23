@@ -34,8 +34,8 @@ class Serializable(object):
         raise NotImplementedError("""Class should have implemented this, but"""
                                   """ developers of the app aren't so fast""")
 
-    @abstractmethod
-    def deserialize(self, data):
+    @classmethod
+    def deserialize(cls, data):
         """
         Deserializes the contents of the data passed to try make them fit into
         the class model. If the data has invalid length or invalid data,
@@ -45,11 +45,14 @@ class Serializable(object):
         the strictly required in variable sized fields, so it will help caller
         methods to detect size after calling deserialization
 
+        As a class method, the method returns an instance of a filled object
+
         Args:
+            cls (class): class of the object to deserialize
             data (bytes): a bytes object containing data to de-serialize
 
         Returns:
-            the instance of the class filled with the data if succeeded
+            cls(): an instance of the class filled with the data if succeeded
 
         Raises:
             ValueError: if data can't be fit into the model
@@ -82,17 +85,19 @@ class Encodable(object):
         """
         pass
 
-    @abstractmethod
-    def decode(self, obj):
+    @classmethod
+    def decode(cls, obj):
         """
         Decodes the object passed and tries to set the attributes and status of
-        the object according to the data the object passed contains
+        the object according to the data the object passed contains into a new
+        object of the class
 
         Args:
+            cls (class): class to decode the object into
             obj (object): object containing information to set class status
 
         Returns:
-            self: the own object with the status filled (self)
+            cls(): an object with the status filled
 
         Raises:
             ValueError: if object passed can't be decoded

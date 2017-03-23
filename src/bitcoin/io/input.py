@@ -45,7 +45,8 @@ class TxInput(Serializable):
 
         return b''.join(serialized)
 
-    def deserialize(self, data):
+    @classmethod
+    def deserialize(cls, data):
         """
         Not implemented yet
         """

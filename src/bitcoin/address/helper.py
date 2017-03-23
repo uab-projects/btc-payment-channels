@@ -3,6 +3,7 @@ Methods that ease computation of common values in addresses, like the checksum
 """
 # Libraries
 from hashlib import sha256, new
+from . import prefix
 
 # Constants
 DOUBLESHA256_CHECKSUM_SIZE = 4
@@ -12,6 +13,36 @@ DOUBLESHA256_CHECKSUM_SIZE = 4
 
 
 # Methods
+def guess_prefix(address):
+    """
+    Given an address, tries to gets its prefix and therefore the type and
+    network of it. If it succeeds, returns network, type and prefix, if not,
+    raises an Exception.
+
+    Args:
+        address (bytes): address to guess prefix from
+
+    Returns:
+        tuple: network, type and prefix tuple
+
+    Raises:
+        ValueError: if prefix can't be guessed
+    """
+    # Guess type and network
+    guess_info = prefix.guess(address)
+
+    # Check if guessed
+    if guess_info is None:
+        raise ValueError("""The address (%s) is not related to any
+        defined network or prefix for any network""" % (address.hex()))
+    else:
+        guess_network, guess_type = guess_info
+
+    # Save values
+    return guess_network, guess_type, \
+        prefix.get(guess_network, guess_type.name)
+
+
 def ripemd160_sha256(value):
     """
     Given a value in bytes, calculates its ripemd(sha256(value)) and

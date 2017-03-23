@@ -12,9 +12,9 @@ class Opcode(Field):
     def serialize(self):
         return bytes([self._value])
 
-    def deserialize(self, value):
-        self._value = value[0]
-        return self
+    @classmethod
+    def deserialize(cls, value):
+        return cls(value[0])
 
 
 # Constants

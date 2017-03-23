@@ -2,6 +2,10 @@
 Models a Bitcoin address and provides methods to check its type and generate
 them given the type and value
 
+A Bitcoin address is not just the public key hash to pay in a P2PKH script, it
+also can contain a private key, a public key, or a script hash for their use
+in P2SH pubkey scripts
+
 Information about addresses can be found here:
 https://en.bitcoin.it/wiki/Address
 https://en.bitcoin.it/wiki/List_of_address_prefixes
@@ -13,6 +17,7 @@ from ..interfaces import Base58Encodable
 from ..nets import Network
 from .types import Types
 from . import prefix
+from . import helper
 
 
 class Address(Field, Base58Encodable):
@@ -33,15 +38,53 @@ class Address(Field, Base58Encodable):
     """
     __slots__ = ["_net", "_type", "_prefix"]
 
-    def __init__(self):
+    def __init__(self, addr_type=prefix.Types.unknown,
+                 addr_net=Network.unknown, addr_prefix=None, value=None):
         """
-        Initializes an empty address, without any predefined network, type
-        or address
+        Initializes an empty address given the type of address and network they
+        belong to or the prefix of the address
+
+        Either a valid address type and network must be provided or just the
+        prefix so the network and type are guessed automatically. If not, an
+        exception will be raised
+
+        If given all arguments, just network and type will be used
+
+        Args:
+            addr_type (address.Types): type of the address
+            addr_net (bitcoin.Nets): network of the address
+            addr_prefix (bytes): address prefix as bytes
+            value (bytes): value of the address as a bytes object
+
+        Raises:
+            ValuError: if no type / network combination or prefix has been
+                       specified
         """
-        self._value = bytes()
-        self._net = Network.unknown
-        self._type = prefix.Types.unknown
-        self._prefix = bytes()
+        # Assert types
+        assert isinstance(addr_type, Types), """Type must be an address.Types
+        enum value"""
+        assert isinstance(addr_net, Network), """Network must be a
+        bitcoin.Network enum value"""
+        assert isinstance(addr_prefix, bytes) or addr_prefix is None, """Prefix
+        must be a bytes object"""
+        assert isinstance(value, bytes) or value is None, """Value must be
+        either None or a bytes object"""
+        # Check pairs
+        if addr_type != Types.unknown and addr_net != Network.unknown:
+            # Got a type / network pair
+            addr_prefix = prefix.get(addr_net, addr_type.name)
+        elif addr_prefix is not None:
+            # Got a prefix
+            addr_net, addr_type, addr_prefix = helper.guess_prefix(addr_prefix)
+        else:
+            raise ValueError("""You must specify either a valid network and
+            type of address combination or a prefix as a bytes object to build
+            an address""")
+        # Assign values
+        self._value = value if value is not None else bytes()
+        self._net = addr_net
+        self._type = addr_type
+        self._prefix = addr_prefix
 
     def serialize(self):
         """
@@ -57,51 +100,13 @@ class Address(Field, Base58Encodable):
         """
         return base58.encode(self.serialize())
 
-    def _guess_prefix(self, address):
-        """
-        Given an address, tries to gets its prefix and therefore the type and
-        network of it. If it succeeds, saves the values to the class, if not,
-        raises an Exception. Also checks that if the address has a valid type,
-        (type is not unknown) the prefix is not changing it, as it could led to
-        errors.
-
-        Args:
-            address (bytes): address to guess prefix from
-
-        Raises:
-            ValueError: if prefix can't be guessed
-            ValueError: if type has to be changed due to the new prefix
-        """
-        # Guess type and network
-        guess_info = prefix.guess(address)
-
-        # Check if guessed
-        if guess_info is None:
-            raise ValueError("""The address (%s) is not related to any
-            defined network or prefix for any network""" % (address.hex()))
-        else:
-            guess_network, guess_type = guess_info
-
-        # Check type
-        if self._type != Types.unknown and self._type != guess_type:
-            raise ValueError("""The address (%s) type (%s) is not valid for this
-            object. This object requires an address of type %s""" (
-                address.hex(), guess_type.name, self._type.name))
-
-        # Save values
-        self._net = guess_network
-        self._type = guess_type
-        self._prefix = prefix.get(guess_network, guess_type.name)
-
-    def deserialize(self, address):
+    @classmethod
+    def deserialize(cls, address):
         """
         Given an address an array of bytes, try to guess information from the
         address (type of address, network and prefix) by looking into the
         defined prefixes. After that, saves the address value and guessed
-        information into the object.
-
-        If the current address object has a type, checks that the
-        deserialization doesn't change the type, to prevent mistakes.
+        information into a new object.
 
         Args:
             address (bytes): bytes object containing an address to deserialize
@@ -109,11 +114,12 @@ class Address(Field, Base58Encodable):
         Returns:
             self: the object with the updated values
         """
-        self._guess_prefix(address)
-        self._value = address[len(self._prefix):]
-        return self
+        addr_net, addr_type, addr_prefix = helper.guess_prefix(address)
+        value = address[len(addr_prefix):]
+        return cls(value)
 
-    def decode(self, address):
+    @classmethod
+    def decode(cls, address):
         """
         Given a base-58 encoded address, decodes it and deserializes it saving
         the information of the address passed into the object. Raises an
@@ -128,13 +134,18 @@ class Address(Field, Base58Encodable):
         Raises:
             ValueError: if address can't be decoded
         """
-        self.deserialize(base58.decode(address))
-        return self
+        return cls.deserialize(base58.decode(address))
 
     @property
     def network(self):
         """ Returns the network the address belongs to """
         return self._net
+
+    @network.setter
+    def network(self, network):
+        """ Sets a new network, changing the prefix according to it """
+        self._prefix = prefix.get(network, self._type.name)
+        self._net = network
 
     @property
     def type(self):
@@ -157,8 +168,30 @@ class Address(Field, Base58Encodable):
 
         Args:
             prefix (bytes): prefix to set
+
+        Raises:
+            ValueError: if the type changes or the prefix is invalid
         """
-        self._guess_prefix(prefix)
+        # Assert type
+        assert isinstance(prefix, bytes), """Prefix must be a bytes object"""
+
+        # Guess new network and type
+        guess = prefix.guess(prefix)
+
+        # Invalid prefix
+        if guess is None:
+            raise ValueError("""Invalid prefix %s tried to set""" %
+                             prefix.hex())
+
+        addr_net, addr_type = guess
+        # Check type hasn't changed
+        if addr_type != self._type:
+            raise ValueError("""Prefix must be of the same address type""")
+
+        # Set
+        self._prefix = prefix
+        self._net = addr_net
+        self._type = addr_type
 
     @property
     def value(self):
@@ -167,35 +200,5 @@ class Address(Field, Base58Encodable):
 
     @value.setter
     def value(self, value):
-        """ Sets the address value """
+        """ Sets the address data """
         self._value = value
-
-
-class AddressType(Address):
-    """
-    Fixed-type address, but whose network may change. This means that when
-    deserializing, the type is checked to ensure it doesn't change and that
-    when the network is changed, the prefix is calculated automatically
-    """
-    def __init__(self, address_type):
-        """
-        Initializes and empty address with its type
-
-        Args:
-            address_type (Types): type of the address
-        """
-        super().__init__()
-        self._type = address_type
-        self._network = Network.testnet
-        self._prefix = prefix.get(self._network, self._type.name)
-
-    @property
-    def network(self):
-        """ Returns the network the address belongs to """
-        return self._net
-
-    @network.setter
-    def network(self, network):
-        """ Sets a new network, changing the prefix according to it """
-        self._prefix = prefix.get(network, self._type.name)
-        self._net = network

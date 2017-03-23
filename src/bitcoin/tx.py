@@ -104,7 +104,8 @@ class Tx(Serializable):
         serialized_items = [x.serialize() for x in serialization_items]
         return b''.join(serialized_items)
 
-    def deserialize(self, data):
+    @classmethod
+    def deserialize(cls, data):
         """
         Deserializes each field of the transaction and fills the transaction
         with the values obtained from the transaction bytes
@@ -117,33 +118,56 @@ class Tx(Serializable):
         Returns:
             the object itself, with the transaction loaded
         """
+        # Initialize variables
         offset = 0
+        # # Version
         version = S4BLEInt().deserialize(data[offset:4])
         offset += 4
+        # # Inputs number
         number_of_inputs = VarInt().deserialize(data[offset:])
         offset += len(number_of_inputs)
+        # # Deserialize inputs
         inputs = []
         for input_i in range(number_of_inputs.value):
             # Deserialize inputs
             pass
+        # # Outputs number
         number_of_outputs = VarInt().deserialize(data[offset:])
         offset += len(number_of_outputs)
+        # # Deserialize outputs
         outputs = []
         for output_i in range(number_of_outputs.value):
             # Deserialize outputs
             pass
+        # # Locktime
         locktime = U4BLEInt().deserialize(data[offset:offset+4])
         offset += 4
+        # # Check remaining
         if offset != len(data):
             raise ValueError("""Serialization finished, but there's still """
                              """data to handle. Offset is at byte %d""" %
                              offset)
-        # Do assignations
-        self._version = version
-        self._inputs = inputs
-        self._outputs = outputs
-        self._locktime = locktime
-        return self
+        # Create object
+        return cls(version, inputs, outputs, locktime)
+
+    def add_input(self, tx_input):
+        """
+        Adds a transaction input to the inputs list
+
+        Args:
+            tx_input(TxInput): input to add to the list
+        """
+        self._inputs.append(tx_input)
+        tx_input.tx = self
+
+    def add_output(self, tx_output):
+        """
+        Adds a transaction output to the outputs list
+
+        Args:
+            tx_output(TxOutput): output to add to the list
+        """
+        self._outputs.append(tx_output)
 
     @property
     def version(self):
@@ -225,25 +249,6 @@ class Tx(Serializable):
         """
         self._locktime.value = locktime
 
-    def add_input(self, tx_input):
-        """
-        Adds a transaction input to the inputs list
-
-        Args:
-            tx_input(TxInput): input to add to the list
-        """
-        self._inputs.append(tx_input)
-        tx_input.tx = self
-
-    def add_output(self, tx_output):
-        """
-        Adds a transaction output to the outputs list
-
-        Args:
-            tx_output(TxOutput): output to add to the list
-        """
-        self._outputs.append(tx_output)
-
     def __str__(self):
         """
         Prints the transaction in a beautiful, printable way
@@ -295,6 +300,6 @@ if __name__ == "__main__":
     T_EMPTYTX_SER = T_EMPTYTX.serialize()
     print(" Result of serialization:", T_EMPTYTX_SER.hex())
     print(" Deserializing previous transaction")
-    T_EMPTYTX_CPY = Tx().deserialize(T_EMPTYTX_SER)
+    T_EMPTYTX_CPY = Tx.deserialize(T_EMPTYTX_SER)
     print(" Result of deserialization...",
           "pass" if T_EMPTYTX_CPY == T_EMPTYTX else "failed")

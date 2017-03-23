@@ -88,11 +88,13 @@ class StackDataField(Field):
 
         return pushdata_opcodes + serialized_data
 
-    def deserialize(self, data):
+    @classmethod
+    def deserialize(cls, data):
         """
         Given a bytes object that is known to contain as first byte a push data
         operation, decodes the operation and extracts the data from the bytes
-        object, storing it as a bytes object in the value of the field
+        object, storing it as a bytes object in the value of the field of a new
+        object
 
         The length of the bytes object can be different from the length of the
         actual data. The method will just save the data that the opcode and
@@ -125,8 +127,7 @@ class StackDataField(Field):
                                  push data to the stack""")
 
         # Resolve data
-        self._value = data[offset:data_size+offset]
-        return self
+        return cls(data[offset:data_size+offset])
 
 
 # Module testing

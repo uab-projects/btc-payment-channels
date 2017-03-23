@@ -74,6 +74,7 @@ class Field(Serializable):
         raise NotImplementedError("""Class should have implemented this, but"""
                                   """ developers of the app aren't so fast""")
 
+    @classmethod
     def deserialize(self, data):
         raise NotImplementedError("""Class should have implemented this, but"""
                                   """ developers of the app aren't so fast""")

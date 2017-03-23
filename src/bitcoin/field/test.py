@@ -47,7 +47,7 @@ def deserialization(deserialized, serialized, cls):
         ValueError if deserialization fails
     """
     print("Deserializing the value", value_to_hex(serialized))
-    deserialized_guess = cls().deserialize(serialized).value
+    deserialized_guess = cls.deserialize(serialized).value
     if deserialized_guess != deserialized:
         raise ValueError("Deserialization failed: " +
                          value_to_hex(deserialized_guess) + " has to be " +

@@ -30,7 +30,8 @@ class Script(Serializable):
         serialized = [x.serialize() for x in self._data]
         return b''.join(serialized)
 
-    def deserialize(self, data):
+    @classmethod
+    def deserialize(cls, data):
         """
         Deserializes the contents of the data passed to try make them fit into
         the class model. If the data has invalid length or invalid data,

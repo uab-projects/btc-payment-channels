@@ -46,9 +46,9 @@ class U2BLEInt(Field):
     def serialize(self):
         return struct.pack('<H', self._value)
 
-    def deserialize(self, v):
-        self._value = struct.unpack('<H', v)[0]
-        return self
+    @classmethod
+    def deserialize(cls, v):
+        return cls(struct.unpack('<H', v)[0])
 
     def __str__(self):
         return "0x{0:02x}".format(self._value)
@@ -67,9 +67,9 @@ class S4BLEInt(Field):
     def serialize(self):
         return struct.pack('<l', self._value)
 
-    def deserialize(self, v):
-        self._value = struct.unpack('<l', v)[0]
-        return self
+    @classmethod
+    def deserialize(cls, v):
+        return cls(struct.unpack('<l', v)[0])
 
     def __str__(self):
         return "0x{0:02x}".format(self._value)
@@ -88,9 +88,9 @@ class U4BLEInt(Field):
     def serialize(self):
         return struct.pack('<L', self._value)
 
-    def deserialize(self, v):
-        self._value = struct.unpack('<L', v)[0]
-        return self
+    @classmethod
+    def deserialize(cls, v):
+        return cls(struct.unpack('<L', v)[0])
 
     def __str__(self):
         return "0x{0:02x}".format(self._value)
@@ -106,9 +106,9 @@ class U8BLEInt(Field):
     def serialize(self):
         return struct.pack('<Q', self._value)
 
-    def deserialize(self, v):
-        self._value = struct.unpack('<Q', v)[0]
-        return self
+    @classmethod
+    def deserialize(cls, v):
+        return cls(struct.unpack('<Q', v)[0])
 
     def __str__(self):
         return "0x{0:02x}".format(self._value)
@@ -177,20 +177,22 @@ class VarInt(Field):
         else:
             return struct.pack('<BQ', self.BYTE_LIMIT+3, self._value)
 
-    def deserialize(self, v):
-        size = self.translate_size(v[0])
+    @classmethod
+    def deserialize(cls, v):
+        size = cls.translate_size(v[0])
+        value = None
         if size == 0:
-            self._value = v[0]
+            value = v[0]
         elif size == 2:
-            self._value = struct.unpack('<H', v[1:3])[0]
+            value = struct.unpack('<H', v[1:3])[0]
         elif size == 4:
-            self._value = struct.unpack('<L', v[1:5])[0]
+            value = struct.unpack('<L', v[1:5])[0]
         elif size == 8:
-            self._value = struct.unpack('<Q', v[1:9])[0]
+            value = struct.unpack('<Q', v[1:9])[0]
         else:
             raise ValueError("""Length of the deserialize variable integer """
                              """must be 1, 3, 5 or 9 bytes""")
-        return self
+        return cls(value)
 
     def __str__(self):
         return "0x{0:02x}".format(self._value)
@@ -212,11 +214,11 @@ class VarLEChar(Field):
         rw_value.reverse()
         return bytes(rw_value)
 
-    def deserialize(self, v):
+    @classmethod
+    def deserialize(cls, v):
         rw_value = bytearray(v)
         rw_value.reverse()
-        self._value = bytes(rw_value)
-        return self
+        return cls(bytes(rw_value))
 
 
 # Classes tests
