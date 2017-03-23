@@ -39,5 +39,4 @@ def sign_tx(tx, priv_key, hashcode=None):
     wif_address = address.WIF()
     wif_address.decode(priv_key)
     sig = ecdsa_tx_sign(tx.serialize(), priv_key)
-    result = bytes().fromhex(sig)
-    return result
+    return bytes().fromhex(sig)
