@@ -39,7 +39,7 @@ if __name__ == "__main__":
         # Some variables
         address_bytes = base58.decode(address_str)
         # Test decoding and deserializing
-        address_obj = Address().decode(address_str)
+        address_obj = Address.decode(address_str)
         print("    -> Decode test: ", end="")
         if address_obj.type == address_type and address_obj.network == net:
             print("pass")
@@ -51,9 +51,7 @@ if __name__ == "__main__":
         address_prefix = address_obj.prefix
         address_value = address_bytes[len(address_prefix):]
         print("    -> Encode test: ", end="")
-        address_obj = Address()
-        address_obj.prefix = address_prefix
-        address_obj.value = address_value
+        address_obj = Address(addr_prefix=address_prefix, value=address_value)
         address_encoded = address_obj.encode()
         if address_encoded == address_str:
             print("pass")
@@ -64,7 +62,7 @@ if __name__ == "__main__":
         if address_type == Types.p2pkh:
             print("    -> Specific P2PKH test")
             print("        -> Decoding P2PKH address: ", end='')
-            address_obj = P2PKH().decode(address_str)
+            address_obj = P2PKH.decode(address_str)
             print("pass")
             address_pkh = address_obj.pkh
             address_checksum = address_obj.checksum
@@ -73,9 +71,7 @@ if __name__ == "__main__":
             print("        -> Guessed checksum: %s (%d-byte)" % (
                 address_checksum.hex(), len(address_checksum)))
             print("        -> Encoding P2PKH address: ")
-            address_obj = P2PKH()
-            address_obj.network = net
-            address_obj.pkh = address_pkh
+            address_obj = P2PKH(net, public_key_hash=address_pkh)
             print("        -> Got prefix: %s" % address_obj.prefix.hex())
             print("        -> Got pkh: %s (%d-byte)" % (address_obj.pkh.hex(),
                                                         len(address_obj.pkh)))
@@ -89,7 +85,7 @@ if __name__ == "__main__":
         elif address_type == Types.wif:
             print("    -> Specific WIF test")
             print("        -> Decoding WIF address: ", end='')
-            address_obj = WIF().decode(address_str)
+            address_obj = WIF.decode(address_str)
             print("pass")
             address_pkey = address_obj.private_key
             address_checksum = address_obj.checksum
@@ -98,9 +94,7 @@ if __name__ == "__main__":
             print("        -> Guessed checksum: %s (%d-byte)" % (
                 address_checksum.hex(), len(address_checksum)))
             print("        -> Encoding WIF address: ")
-            address_obj = WIF()
-            address_obj.network = net
-            address_obj.private_key = address_pkey
+            address_obj = WIF(net, address_pkey)
             print("        -> Got prefix: %s" % address_obj.prefix.hex())
             print("        -> Got private key: %s (%d-byte)" % (
                 address_obj.private_key.hex(), len(address_obj.private_key)))

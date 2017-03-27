@@ -116,7 +116,7 @@ class Address(Field, Base58Encodable):
         """
         addr_net, addr_type, addr_prefix = helper.guess_prefix(address)
         value = address[len(addr_prefix):]
-        return cls(value)
+        return cls(addr_type, addr_net, value=value)
 
     @classmethod
     def decode(cls, address):
@@ -141,12 +141,6 @@ class Address(Field, Base58Encodable):
         """ Returns the network the address belongs to """
         return self._net
 
-    @network.setter
-    def network(self, network):
-        """ Sets a new network, changing the prefix according to it """
-        self._prefix = prefix.get(network, self._type.name)
-        self._net = network
-
     @property
     def type(self):
         """ Returns the type of the address """
@@ -157,48 +151,7 @@ class Address(Field, Base58Encodable):
         """ Returns the bytes prefix of the address """
         return self._prefix
 
-    @prefix.setter
-    def prefix(self, prefix):
-        """
-        Sets the address prefix. Checks for the network and type of the prefix
-        and updates them too. If the prefix is unknown, Exception is raised.
-
-        Prefix can't be changed if it means the address type will be changed
-        and is a known type
-
-        Args:
-            prefix (bytes): prefix to set
-
-        Raises:
-            ValueError: if the type changes or the prefix is invalid
-        """
-        # Assert type
-        assert isinstance(prefix, bytes), """Prefix must be a bytes object"""
-
-        # Guess new network and type
-        guess = prefix.guess(prefix)
-
-        # Invalid prefix
-        if guess is None:
-            raise ValueError("""Invalid prefix %s tried to set""" %
-                             prefix.hex())
-
-        addr_net, addr_type = guess
-        # Check type hasn't changed
-        if addr_type != self._type:
-            raise ValueError("""Prefix must be of the same address type""")
-
-        # Set
-        self._prefix = prefix
-        self._net = addr_net
-        self._type = addr_type
-
     @property
     def value(self):
         """ Returns the address data """
         return self._value
-
-    @value.setter
-    def value(self, value):
-        """ Sets the address data """
-        self._value = value

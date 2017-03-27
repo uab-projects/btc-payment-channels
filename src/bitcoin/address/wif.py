@@ -8,7 +8,7 @@ https://en.bitcoin.it/wiki/Wallet_import_format
 Tests extracted from:
 http://gobittest.appspot.com/PrivateKey
 """
-from .model import AddressType
+from .model import Address
 from .types import Types
 from .helper import DOUBLESHA256_CHECKSUM_SIZE, doublesha256_checksum,\
     doublesha256_checksum_validate
@@ -32,27 +32,54 @@ CHECKSUM_SIZE = DOUBLESHA256_CHECKSUM_SIZE
 """
 
 
+# Methods
+def validate_private_key(private_key):
+    """
+    Given a private key as a bytes object, check if it's valid and raises
+    an exception if not
+
+    Args:
+        private_key (bytes): private key as bytes object
+    """
+    # Check size
+    if len(private_key) < PRIVATE_KEY_MIN_SIZE\
+       or len(private_key) > PRIVATE_KEY_MAX_SIZE:
+        raise ValueError("""Unable to set a private key with length %d
+        bytes. Private keys have to be between %d-%d bytes""" % (
+            len(private_key), PRIVATE_KEY_MIN_SIZE, PRIVATE_KEY_MAX_SIZE))
+
+
 # Classes
-class WIF(AddressType):
+class WIF(Address):
     """
     WIF address address. Allows to serialize, deserialize, encode
     and decode WIF addresses to obtain and set ECDSA private keys in a portable
     format
 
-    Internal _value field is not used, as serialization and deserialization
-    methods calculate them when needed.
-
-    Attributes:
-        _private_key (bytes): ECDSA private key the address contains
+    Internal _value field contains the private key and checksum
     """
-    __slots__ = ["_private_key"]
 
-    def __init__(self):
-        """ Same as Address constructor, but setting correct type """
-        super().__init__(Types.wif)
-        self._private_key = bytes()
+    def __init__(self, addr_net, private_key):
+        """
+        Initializes a WIF address given the address network and the private
+        key as a bytes object
 
-    def deserialize(self, address):
+        Args:
+            addr_net (Network): network the address operates in
+            private_key (bytes): private ECDSA key as bytes object
+        """
+        # Assert types
+        assert isinstance(private_key, bytes), """Private key must be a bytes
+        object"""
+        # Initialize super classes
+        super().__init__(Types.wif, addr_net)
+        # Assign value
+        validate_private_key(private_key)
+        self._value = private_key + doublesha256_checksum(
+            self._prefix + private_key)
+
+    @classmethod
+    def deserialize(cls, address):
         """
         Deserializes the given address as an array of bytes, guessing its
         prefix and saving its info, checking that the prefix type is WIF and
@@ -65,52 +92,21 @@ class WIF(AddressType):
             self: the object with the updated values
         """
         # Basic deserialization
-        super().deserialize(address)
-        # Set private key
-        self._private_key = self._value[:-CHECKSUM_SIZE]
-        return self
+        addr_obj = Address.deserialize(address)
+        # Type check
+        if(addr_obj.type != Types.wif):
+            raise ValueError("""The deserialized address is not a WIF
+            address""")
+        # Validate private key
+        private_key = addr_obj._value[:-CHECKSUM_SIZE]
+        validate_private_key(private_key)
+        # Return new object
+        return cls(addr_obj.network, private_key)
 
     @property
     def private_key(self):
         """ Extracts the private key from the address """
-        return self._private_key
-
-    @private_key.setter
-    def private_key(self, private_key):
-        """ Sets the address ECSA private key, updating address value """
-        # Check size
-        if len(private_key) < PRIVATE_KEY_MIN_SIZE\
-           or len(private_key) > PRIVATE_KEY_MAX_SIZE:
-            raise ValueError("""Unable to set a private key with length %d
-            bytes. Private keys have to be between %d-%d bytes""" % (
-                len(private_key), PRIVATE_KEY_MIN_SIZE, PRIVATE_KEY_MAX_SIZE))
-        # Update values
-        self._private_key = private_key
-
-    @property
-    def value(self):
-        """ Returns the value by calculating the checksum and prepending the
-        private key """
-        return self._private_key + doublesha256_checksum(
-            self._prefix + self._private_key)
-
-    @value.setter
-    def value(self, value):
-        """
-        Given a value supposed to be the private key and checksum,
-        checks that the checksum for the private key and current prefix is
-        valid and sets the value.
-
-        This means to set the private key and checksum at once
-        """
-        # Get private key and checksum
-        private_key = value[:-CHECKSUM_SIZE]
-        checksum = value[-CHECKSUM_SIZE:]
-        # Test checksum
-        doublesha256_checksum_validate(self._prefix + private_key, checksum)
-        # Save
-        self._value = value
-        self._private_key = private_key
+        return self._value[:-CHECKSUM_SIZE]
 
     @property
     def checksum(self):

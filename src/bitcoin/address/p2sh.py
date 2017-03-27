@@ -6,8 +6,9 @@ Information extracted from:
 http://www.soroushjp.com/2014/12/20/bitcoin-multisig-the-hard-way-understanding-raw-multisignature-bitcoin-transactions/
 """
 # Libraries
-from .model import AddressType
+from .model import Address
 from .types import Types
+from ..script.redeem import RedeemScript
 
 # Constants
 PREFIX_SIZE = 1
@@ -25,21 +26,56 @@ ADDRESS_SIZE = PREFIX_SIZE + SH_SIZE
 
 
 # Classes
-class P2SH(AddressType):
+class P2SH(Address):
     """
     Pay to script hash address. Allows to serialize, deserialize, encode
     and decode P2SH addresses so the reedem script hash can be easily set and
     got (its hash) to generate / decode easily P2SH addresses
 
-    Internal _value field is used as it contains the hash of the reedem script
-    itself
+    Internal _value field is contains the hash of the reedem script itself
     """
 
-    def __init__(self):
-        """ Same as Address constructor, but setting correct type """
-        super().__init__(Types.p2sh)
+    def __init__(self, addr_net, redeem_script=None, redeem_script_hash=None):
+        """
+        Initializes a P2SH address with the network it belongs to and the
+        redeem script hash or the redeem script, so the redeem script hash
+        is automatically set.
 
-    def deserialize(self, address):
+        You can set either the redeem script object so the hash is performed
+        and then set in the address value or directly the hash as a bytes
+        object. If both are passed, just the bytes object is taken.
+
+        Args:
+            addr_net (Network): network the address belongs to
+            redeem_script (RedeemScript): redeem script to build the key on
+            redeem_script_hash (bytes): redeem script hash to set as value
+        """
+        # Type assertions
+        assert isinstance(redeem_script, RedeemScript) \
+            or redeem_script is None, """Redeem script must be a RedeemScript
+            object"""
+        assert isinstance(redeem_script_hash, bytes) \
+            or redeem_script_hash is None, """Redeem script hash must be a bytes
+            object"""
+        assert redeem_script is not None or redeem_script_hash is not None, \
+            """You must specify either a redeem script or a redeem script hash
+            to create a P2SH address"""
+
+        # Initialize super
+        super().__init__(Types.p2sh, addr_net)
+
+        # Set value
+        if redeem_script_hash is not None:
+            if len(redeem_script_hash) != SH_SIZE:
+                raise ValueError("""Unable to set a reedem script hash with
+                length %d bytes. Script hash has to be %d bytes""" % (
+                    len(redeem_script_hash), SH_SIZE))
+            self._value = redeem_script_hash
+        else:
+            self._value = redeem_script.hash
+
+    @classmethod
+    def deserialize(cls, address):
         """
         Deserializes the given address as an array of bytes, guessing its
         prefix and saving its info, checking that the prefix type is P2SH and
@@ -56,32 +92,16 @@ class P2SH(AddressType):
             raise ValueError("""P2SH Address %s size in bytes is not valid.
         All P2SH addresses have %d bytes""" % (address.hex(), ADDRESS_SIZE))
         # Basic deserialization
-        super().deserialize(address)
-        return self
-
-    @property
-    def value(self):
-        """ Returns the address data (script hash) """
-        return self._value
-
-    @value.setter
-    def value(self, value):
-        """ Sets the address value (script hash) """
-        self.script_hash = value
+        addr_obj = Address.deserialize(address)
+        # Check type
+        if(addr_obj.type != Types.p2sh):
+            raise ValueError("""The deserialized address is not a P2SH
+            address""")
+        # Return object
+        return cls(addr_obj.network, redeem_script_hash=addr_obj.value)
 
     @property
     def script_hash(self):
         """ Extracts the script hash from the address, it's the same as the
         address value """
         return self._value
-
-    @script_hash.setter
-    def script_hash(self, script_hash):
-        """ Sets the reedem script hash, updating address value """
-        # Check size
-        if len(script_hash) != SH_SIZE:
-            raise ValueError("""Unable to set a reedem script hash with length
-            %d bytes. Script hash has to be %d bytes""" % (len(script_hash),
-                                                           SH_SIZE))
-        # Update values
-        self._value = script_hash

@@ -18,44 +18,32 @@ class P2PKH(ScriptPubKey):
     public key hash value will be invalid until serialization
     """
 
-    def __init__(self):
+    def __init__(self, new_address):
         """
-        Initializes an empty P2PKH and creates the basic P2PKH, changing the
-        address object to a P2PKH address object
+        Initializes a P2PKH and creates the basic P2PKH, given the address
+        containing the public key hash
+
+        Args:
+            new_address (address.P2PKH): p2pkh address to build pubkey script
+            from
         """
-        super().__init__()
-        self._address = address.P2PKH()
+        # Initialize super
+        super().__init__(new_address)
+        # Check address
+        assert isinstance(new_address, address.P2PKH), """ address to set must
+        be a P2PKH address object """
+        # Build script
         self._build()
 
     def _build(self):
         """
-        Initializes the script with the opcodes of a P2PKH scriptPubKey
+        Creates the script with the opcodes of a P2PKH scriptPubKey
         """
         self._data.append(OP_DUP)
         self._data.append(OP_HASH160)
         self._data.append(StackDataField(self._address.pkh))
         self._data.append(OP_EQUALVERIFY)
         self._data.append(OP_CHECKSIG)
-
-    def serialize(self):
-        """
-        Serializes the P2PKH scriptPubKey, updating the public key hash first
-        """
-        self._data[2].value = self._address.pkh
-        return super().serialize()
-
-    @property
-    def address(self):
-        """ Returns the pubkey address """
-        return self._address
-
-    @address.setter
-    def address(self, new_address):
-        """ Sets the pubkey address and updates the pkh field of the script """
-        assert isinstance(new_address, address.P2PKH), """ address to set must
-        be a P2PKH address object """
-        self._address = new_address
-        self._data[2].value = self._address.pkh
 
     def __str__(self):
         """

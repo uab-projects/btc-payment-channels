@@ -63,17 +63,28 @@ class P2PKH(Address):
             """Public key hash must be a bytes object"""
         assert isinstance(value, bytes) or value is None, \
             """Value of the P2PKH address must be a bytes object"""
+        assert public_key is not None or public_key_hash is not None \
+            or value is not None, """To create a P2PKH address you must
+            specify either a public key or public key hash"""
 
         # Initialize
         super().__init__(Types.p2pkh, addr_net)
 
-        # Set value
+        # Direct value set
         if value is not None:
-            self.value = value
-        elif public_key_hash is not None:
-            self.pkh = public_key_hash
-        elif public_key is not None:
-            self.pkh = ripemd160_sha256(public_key)
+            self._value = value
+        else:
+            # Obtain public key hash and set
+            if public_key_hash is not None:
+                if len(public_key_hash) != PKH_SIZE:
+                    raise ValueError("""Unable to set a public key hash with
+                    length %d bytes. Public key hash has to be %d bytes""" % (
+                        len(public_key_hash), PKH_SIZE))
+            elif public_key is not None:
+                public_key_hash = ripemd160_sha256(public_key)
+            # Update value
+            self._value = public_key_hash + doublesha256_checksum(
+                self._prefix + public_key_hash)
 
     @classmethod
     def deserialize(cls, address):
@@ -104,46 +115,6 @@ class P2PKH(Address):
     def pkh(self):
         """ Extracts the public key hash from the address """
         return self._value[:-CHECKSUM_SIZE]
-
-    @pkh.setter
-    def pkh(self, pkh):
-        """ Sets the address public key hash, updating address value """
-        # Check size
-        if len(pkh) != PKH_SIZE:
-            raise ValueError("""Unable to set a public key hash with length %d
-            bytes. Public key hash has to be %d bytes""" % (len(pkh),
-                                                            PKH_SIZE))
-        # Update values
-        self._value = pkh + doublesha256_checksum(self._prefix + pkh)
-
-    @property
-    def value(self):
-        """ Returns the value by calculating the checksum and prepending public
-        key hash """
-        return self._value
-
-    @value.setter
-    def value(self, value):
-        """
-        Given a value supposed to be the public key hash and checksum,
-        checks that the checksum for the public key hash and current prefix is
-        valid and sets the value.
-
-        This means to set the public key hash and checksum at once
-        """
-        # Check size
-        if len(value) != PKH_SIZE + CHECKSUM_SIZE:
-            raise ValueError("""Value is expected to be public key hash and
-            checksum. Given a bytes object with %d bytes. Needed %d""" % (
-                len(value), PKH_SIZE + CHECKSUM_SIZE))
-        # Get pkh and checksum
-        pkh = value[:-CHECKSUM_SIZE]
-        checksum = value[-CHECKSUM_SIZE:]
-        # Test checksum
-        doublesha256_checksum_validate(self._prefix + self._pkh, checksum)
-        # Save
-        self._value = value
-        self._pkh = pkh
 
     @property
     def checksum(self):

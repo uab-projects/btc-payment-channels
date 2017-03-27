@@ -21,12 +21,35 @@ class TxOutput(Serializable):
     """
     __slots__ = ["_value", "_script"]
 
-    def __init__(self):
+    def __init__(self, script, btc=None, satoshis=None):
         """
-        Initializes an empty TxOutput with no value and empty script
+        Initializes a TxOutput with a value and script
+
+        Either a value in satoshis or in bitcoins must be provided, priorizing
+        first the satoshis value if both are provided
+
+        Args:
+            script (ScriptPubKey): pubkey script of the output
+            value (int): number of satoshis of the output
+            btc (float): number of bitcoins of the output
         """
-        self._value = U8BLEInt(0)
-        self._script = ScriptPubKey()
+        # Type checks
+        assert isinstance(script, ScriptPubKey), """The script of the output
+        must be a ScriptPubKey object"""
+        assert isinstance(btc, int) or isinstance(btc, float) or btc is None, \
+            """Number of bitcoins must be an integer or a float value"""
+        assert isinstance(satoshis, int) or satoshis is None, """Number of
+        satoshis must be an integer value"""
+        assert btc is not None or satoshis is not None, """Either a number of
+        satoshis or bitcoins must be provided to create the output"""
+
+        # Transform satoshis or bitcoins
+        if btc is not None:
+            satoshis = btc_to_satoshi(btc)
+
+        # Set values
+        self._value = U8BLEInt(satoshis)
+        self._script = script
 
     def serialize(self):
         """

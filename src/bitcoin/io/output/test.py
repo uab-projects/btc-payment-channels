@@ -2,7 +2,9 @@
 Tests the TxOutput model and factories
 """
 # Libraries
-from .factory import p2pkh
+from .model import TxOutput
+from ...script import pubkey
+from ... import address
 
 if __name__ == "__main__":
     # tx a0cdf43a2832e923c9ae629268405c2c7c32c36fba4465bf6e103f6ab33d8b2b
@@ -11,6 +13,7 @@ if __name__ == "__main__":
     output_val = 0.12868171
     output_address = "1CL3KTtkN8KgHAeWMMWfG9CPL3o5FSMU4P"
     # create output
-    output_obj = p2pkh(output_val, output_address)
+    output_obj = TxOutput(pubkey.P2PKH(address.P2PKH.decode(output_address)),
+                          output_val)
     if(output_obj.serialize() == output):
         print("Test passed")

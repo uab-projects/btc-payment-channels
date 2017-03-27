@@ -3,8 +3,8 @@ Models a Bitcoin scriptPubKey and defines methods to fill the script pubkey
 according to the address sent, that will detect if it's a P2SH, P2PKH,...
 """
 # Libraries
+from abc import abstractmethod
 from ..general import Script
-from ... import address
 
 
 class ScriptPubKey(Script):
@@ -15,16 +15,26 @@ class ScriptPubKey(Script):
 
     Attributes:
         _address (Address): address to generate the script according to
-                            address has to be P2SH or P2PKH
+                            address type has to be P2SH or P2PKH
     """
     __slots__ = ["_address"]
 
-    def __init__(self):
+    def __init__(self, address):
         """
-        Initializes an empty scriptPubKey with an empty address
+        Initializes a scriptPubKey with an address
+
+        Args:
+            new_address (address.Address): address of the script
         """
         super().__init__()
-        self._address = address.Address()
+        self._address = address
+
+    @abstractmethod
+    def _build(self):
+        """
+        Adds the opcodes and data necessary to create the script
+        """
+        pass
 
     @property
     def address(self):

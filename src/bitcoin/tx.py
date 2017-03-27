@@ -121,10 +121,10 @@ class Tx(Serializable):
         # Initialize variables
         offset = 0
         # # Version
-        version = S4BLEInt().deserialize(data[offset:4])
+        version = S4BLEInt.deserialize(data[offset:4])
         offset += 4
         # # Inputs number
-        number_of_inputs = VarInt().deserialize(data[offset:])
+        number_of_inputs = VarInt.deserialize(data[offset:])
         offset += len(number_of_inputs)
         # # Deserialize inputs
         inputs = []
@@ -132,7 +132,7 @@ class Tx(Serializable):
             # Deserialize inputs
             pass
         # # Outputs number
-        number_of_outputs = VarInt().deserialize(data[offset:])
+        number_of_outputs = VarInt.deserialize(data[offset:])
         offset += len(number_of_outputs)
         # # Deserialize outputs
         outputs = []
@@ -140,7 +140,7 @@ class Tx(Serializable):
             # Deserialize outputs
             pass
         # # Locktime
-        locktime = U4BLEInt().deserialize(data[offset:offset+4])
+        locktime = U4BLEInt.deserialize(data[offset:offset+4])
         offset += 4
         # # Check remaining
         if offset != len(data):
@@ -148,7 +148,7 @@ class Tx(Serializable):
                              """data to handle. Offset is at byte %d""" %
                              offset)
         # Create object
-        return cls(version, inputs, outputs, locktime)
+        return cls(version.value, inputs, outputs, locktime.value)
 
     def add_input(self, tx_input):
         """
