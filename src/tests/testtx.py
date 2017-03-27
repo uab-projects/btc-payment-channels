@@ -2,16 +2,17 @@
 
 import sys
 from ..bitcoin.tx import Tx
+from ..bitcoin import script, address
 from ..bitcoin.io.input import TxInput
-from ..bitcoin.io.output import p2pkh
-from ..bitcoin.script.sig import P2PKH
+from ..bitcoin.io.output import TxOutput
 
 
 if __name__ == "__main__":
     key = sys.argv[1]
 
     # Input data
-    tx_id = bytes().fromhex("192b1a770e62c46474bec5195f73698a1b991fe6f6d262af43f45ec12080671b")
+    tx_id = bytes().fromhex(
+        "192b1a770e62c46474bec5195f73698a1b991fe6f6d262af43f45ec12080671b")
     tx_n = 0
 
     # Output data
@@ -26,9 +27,11 @@ if __name__ == "__main__":
     transaction = Tx()
 
     # Add outputs
-    out_0 = p2pkh(value, address_rcv)
+    out_0 = TxOutput(script.pubkey.P2PKH(address.P2PKH.decode(address_rcv)),
+                     value)
     transaction.add_output(out_0)
-    out_1 = p2pkh(value_return, address_return)
+    out_1 = TxOutput(script.pubkey.P2PKH(address.P2PKH.decode(address_rcv)),
+                     value)
     transaction.add_output(out_1)
 
     # Add input
@@ -36,7 +39,7 @@ if __name__ == "__main__":
     transaction.add_input(in_0)
     print("Tx before sign", transaction)
 
-    scriptsig = P2PKH(in_0)
+    scriptsig = script.sig.P2PKH(in_0)
     scriptsig.sign(key)
 
     print("Tx after sign", transaction)

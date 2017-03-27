@@ -33,4 +33,5 @@ targets:
         cmd: "python"
         args:
           - "-m"
-          - "src.tests.test-tx"
+          - "src.tests.testtx"
+          - "`cat bit.key`"
