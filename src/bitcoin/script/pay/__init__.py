@@ -1,6 +1,7 @@
 """
 Models generic payment scripts, used in P2SH
 """
-from .model import PaymentScript
+from .model import PayScript
+from .multisig import MultiSig
 
-__all__ = ["PaymentScript"]
+__all__ = ["PayScript", "MultiSig"]

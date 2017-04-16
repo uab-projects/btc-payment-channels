@@ -8,7 +8,7 @@ from ...field.script import StackDataField
 from ..hashcodes import Types
 from ..helper import sign_tx, prepare_tx_to_sign
 from ... import address
-from ...address.helper import ripemd160_sha256
+from ...nets import Network
 from bitcoin import main as vbuter
 from .. import pubkey
 
@@ -56,11 +56,9 @@ class P2PKH(ScriptSig):
         """
         pub = vbuter.privkey_to_pubkey(key)
         idx = 0  # self._input.tx.inputs.index(self._input)
-        addr = address.P2PKH()
-        addr.pkh = ripemd160_sha256(bytes().fromhex(pub))
+        addr = address.P2PKH(Network.testnet, bytes().fromhex(pub))
         tx = self._input.tx
-        script_to_pay = pubkey.P2PKH()
-        script_to_pay.address = addr
+        script_to_pay = pubkey.P2PKH(addr)
         tx = prepare_tx_to_sign(tx, idx, addr, self._hashcode)
         self._signature = sign_tx(tx, key)
         self._pubkey = bytes().fromhex(pub)

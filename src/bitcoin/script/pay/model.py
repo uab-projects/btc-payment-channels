@@ -12,4 +12,5 @@ class PayScript(Script):
 
     def __init__(self, redeem):
         """ Creates a payment script given its redeem script to pay to """
+        super().__init__()
         self._redeem = redeem

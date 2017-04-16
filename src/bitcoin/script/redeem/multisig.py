@@ -16,6 +16,7 @@ class MultiSig(RedeemScript):
     __slots__ = ["_sigNeeded", "_sigTotal", "_pubKeys"]
 
     def __init__(self, needed, total):
+        super().__init__()
         self._sigNeeded = needed
         self._sigTotal = total
         self._pubKeys = []

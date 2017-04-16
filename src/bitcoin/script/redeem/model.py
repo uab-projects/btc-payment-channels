@@ -13,9 +13,11 @@ class RedeemScript(Script):
     Models a general reedem script, allowing to hash it to include it in a
     P2SH address
     """
+    def __init__(self):
+        super().__init__()
 
-    @abstractmethod
     @property
+    @abstractmethod
     def pay_script(self):
         """ Creates a payment script to pay this redeem script """
         return PayScript(self)

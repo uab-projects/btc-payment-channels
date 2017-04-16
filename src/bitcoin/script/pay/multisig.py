@@ -1,8 +1,8 @@
 from .model import PayScript
 from ...field.opcode import OP_0
+from ...field.script import StackDataField
 
-
-class Multisig(PayScript):
+class MultiSig(PayScript):
     """
     """
     __slots__ = ["_signatures"]
@@ -24,4 +24,4 @@ class Multisig(PayScript):
         """
         self._data.append(OP_0)
         for sign in self._signatures:
-            self._data.append(sign)
+            self._data.append(StackDataField(sign))
