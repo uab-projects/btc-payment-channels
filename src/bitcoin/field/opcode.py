@@ -68,10 +68,40 @@ OP_PUSHDATA4 = type('OP_PUSHDATA4', (Opcode,), {
     pushed onto the stack."""
 })(78)
 
+OP_IF = type('OP_IF', (Opcode,), {
+    "name": "OP_IF",
+    "description": """If the top stack value is not False, the statements are
+    executed. The top stack value is removed."""
+})(99)
+
+OP_ELSE = type('OP_ELSE', (Opcode,), {
+    "name": "OP_ELSE",
+    "description": """If the preceding OP_IF or OP_NOTIF or OP_ELSE was not
+    executed then these statements are and if the preceding OP_IF or OP_NOTIF
+    or OP_ELSE was executed then these statements are not."""
+})(103)
+
+OP_ENDIF = type('OP_ENDIF', (Opcode,), {
+    "name": "OP_ENDIF",
+    "description": """Ends an if/else block. All blocks must end, or the
+    transaction is invalid. An OP_ENDIF without OP_IF earlier is also invalid.
+    """
+})(104)
+
+OP_DROP = type('OP_DROP', (Opcode,), {
+    "name": "OP_DROP",
+    "description": """Removes the top stack item."""
+})(117)
+
 OP_DUP = type('OP_DUP', (Opcode,), {
     "name": "OP_DUP",
     "description": """Duplicates the top stack item."""
 })(118)
+
+OP_OVER = type('OP_OVER', (Opcode,), {
+    "name": "OP_OVER",
+    "description": """Copies the second-to-top stack item to the top."""
+})(120)
 
 OP_EV = OP_EQUALVERIFY = type('OP_EQUALVERIFY', (Opcode,), {
     "name": "OP_EQUALVERIFY",
@@ -113,3 +143,10 @@ OP_CMS = OP_CHECKMULTISIG = type('OP_CHECKMULTISIG', (Opcode,), {
     signatures are valid, 1 is returned, 0 otherwise.
     Due to a bug, one extra unused value is removed from the stack."""
 })(174)
+
+OP_CLTV = OP_CHECKLOCKTIMEVERIFY = type('OP_CHECKLOCKTIMEVERIFY', (Opcode,), {
+    "name": "OP_CHECKLOCKTIMEVERIFY",
+    "description": """Marks transaction as invalid if the top stack item is
+    greater than the transaction's nLockTime field, otherwise script evaluation
+    continues as though an OP_NOP was executed"""
+})(177)
