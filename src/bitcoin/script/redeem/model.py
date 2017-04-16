@@ -2,6 +2,8 @@
 Interface for reedem scripts used in P2SH modes
 """
 # Libraries
+from abc import abstractmethod
+from ..pay import PayScript
 import hashlib
 from ..general import Script
 
@@ -11,6 +13,12 @@ class RedeemScript(Script):
     Models a general reedem script, allowing to hash it to include it in a
     P2SH address
     """
+
+    @abstractmethod
+    @property
+    def pay_script(self):
+        """ Creates a payment script to pay this redeem script """
+        return PayScript(self)
 
     @property
     def hash(self):
@@ -23,7 +31,7 @@ class RedeemScript(Script):
         hash = ripemd160(sha256(script_bytes))
 
         Returns:
-            bytes: ha
+            bytes: hash
         """
         sha256 = hashlib.sha256(self.serialize()).digest()
         ripemd = hashlib.new("ripemd160")
