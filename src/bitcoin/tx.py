@@ -18,6 +18,9 @@ about it
 """
 
 # Libraries
+# # Built-in
+import hashlib
+# # App
 from .interfaces import Serializable
 from .field.general import S4BLEInt, U4BLEInt, VarInt
 
@@ -248,6 +251,19 @@ class Tx(Serializable):
             locktime (int): new transaction locktime
         """
         self._locktime.value = locktime
+
+    @property
+    def id(self):
+        """
+        Calculates the transaction ID serializing the transaction and
+        calculating the double SHA256 of it, according to:
+        https://en.bitcoin.it/wiki/Transaction
+
+        Returns:
+            bytes: transaction id as a bytes object
+        """
+        return hashlib.sha256(
+            hashlib.sha256(self.serialize()).digest()).digest()
 
     def __str__(self):
         """
