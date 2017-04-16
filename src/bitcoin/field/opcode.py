@@ -103,6 +103,11 @@ OP_OVER = type('OP_OVER', (Opcode,), {
     "description": """Copies the second-to-top stack item to the top."""
 })(120)
 
+OP_EQUAL = type('OP_EQUAL', (Opcode,), {
+    "name": "OP_EQUAL",
+    "description": "Returns 1 if the inputs are exactly equal, 0 otherwise."
+})(135)
+
 OP_EV = OP_EQUALVERIFY = type('OP_EQUALVERIFY', (Opcode,), {
     "name": "OP_EQUALVERIFY",
     "description": """Same as OP_EQUAL, but runs OP_VERIFY afterward."""
