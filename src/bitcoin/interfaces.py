@@ -5,8 +5,10 @@ classes must provide.
 """
 
 # Libraries
+# # Built-in
 from abc import ABCMeta, abstractmethod
-
+# # External
+from bitcoin import base58
 
 class Serializable(object):
     """
@@ -110,3 +112,27 @@ class Base58Encodable(Encodable):
     Same as previous Encodable interface, but specifies that will be encoded
     into a base58 string and decoded from a base58 string.
     """
+
+    def encode(self):
+        """
+        Returns the object as a base-58 string with the array of bytes (the
+        serialized object)
+        """
+        return base58.encode(self.serialize())
+
+    @classmethod
+    def decode(cls, string):
+        """
+        Given a base-58 encoded object, decodes it and deserializes it,
+        returning a new object containing the deserialized information
+
+        Args:
+            string (str): base-58 encoded string
+
+        Returns:
+            cls: a new object filled with the values that the string contained
+
+        Raises:
+            ValueError: if can't be decoded
+        """
+        return cls.deserialize(base58.decode(string))

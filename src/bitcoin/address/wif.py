@@ -8,45 +8,36 @@ https://en.bitcoin.it/wiki/Wallet_import_format
 Tests extracted from:
 http://gobittest.appspot.com/PrivateKey
 """
+# Libraries
+# # App
+from ..nets import DEFAULT_NETWORK
 from .model import Address
 from .types import Types
-from .helper import DOUBLESHA256_CHECKSUM_SIZE, doublesha256_checksum,\
-    doublesha256_checksum_validate
+from ..crypto.ecdsa import private_to_public, validate_private_key
+from ..crypto.hash import checksum
 
 # Constants
 PREFIX_SIZE = 1
 """
     int: size in bytes of the WIF address prefixes
 """
-PRIVATE_KEY_MIN_SIZE = 16
-"""
-    int: minimum private key size in bytes
-"""
-PRIVATE_KEY_MAX_SIZE = 64
-"""
-    int: maximum private key size in bytes
-"""
-CHECKSUM_SIZE = DOUBLESHA256_CHECKSUM_SIZE
+CHECKSUM_SIZE = 4
 """
     int: size in bytes for the address suffix checksum
 """
-
-
-# Methods
-def validate_private_key(private_key):
-    """
-    Given a private key as a bytes object, check if it's valid and raises
-    an exception if not
-
-    Args:
-        private_key (bytes): private key as bytes object
-    """
-    # Check size
-    if len(private_key) < PRIVATE_KEY_MIN_SIZE\
-       or len(private_key) > PRIVATE_KEY_MAX_SIZE:
-        raise ValueError("""Unable to set a private key with length %d
-        bytes. Private keys have to be between %d-%d bytes""" % (
-            len(private_key), PRIVATE_KEY_MIN_SIZE, PRIVATE_KEY_MAX_SIZE))
+UNCOMPRESSED_SIZE = 32
+"""
+    int: normal WIF address size in bytes
+    source:
+    https://github.com/vbuterin/pybitcointools/blob/master/bitcoin/main.py
+"""
+COMPRESSED_SIZE = 33
+"""
+    int: compressed WIF address size in bytes
+    source:
+    source:
+    https://github.com/vbuterin/pybitcointools/blob/master/bitcoin/main.py
+"""
 
 
 # Classes
@@ -58,8 +49,7 @@ class WIF(Address):
 
     Internal _value field contains the private key and checksum
     """
-
-    def __init__(self, addr_net, private_key):
+    def __init__(self, private_key, addr_net=DEFAULT_NETWORK):
         """
         Initializes a WIF address given the address network and the private
         key as a bytes object
@@ -75,8 +65,7 @@ class WIF(Address):
         super().__init__(Types.wif, addr_net)
         # Assign value
         validate_private_key(private_key)
-        self._value = private_key + doublesha256_checksum(
-            self._prefix + private_key)
+        self._value = private_key + checksum(self._prefix + private_key)
 
     @classmethod
     def deserialize(cls, address):
@@ -94,19 +83,36 @@ class WIF(Address):
         # Basic deserialization
         addr_obj = Address.deserialize(address)
         # Type check
-        if(addr_obj.type != Types.wif):
-            raise ValueError("""The deserialized address is not a WIF
-            address""")
+        assert addr_obj.type == Types.wif, """The deserialized address is not
+        a WIF address"""
         # Validate private key
         private_key = addr_obj._value[:-CHECKSUM_SIZE]
         validate_private_key(private_key)
         # Return new object
-        return cls(addr_obj.network, private_key)
+        return cls(private_key, addr_net=addr_obj.network)
 
     @property
     def private_key(self):
-        """ Extracts the private key from the address """
-        return self._value[:-CHECKSUM_SIZE]
+        """
+        Extracts the private key from the address
+
+        Source:
+        https://github.com/vbuterin/pybitcointools/blob/master/bitcoin/main.py
+        """
+        private_key = self._value[:-CHECKSUM_SIZE]
+        if self.compressed:
+            private_key = private_key[:UNCOMPRESSED_SIZE]
+        return private_key
+
+    @property
+    def public_key(self):
+        """ Extracts the public key from the private key contents """
+        return private_to_public(self.private_key)
+
+    @property
+    def compressed(self):
+        """ Calculates if the address is compressed or not """
+        return len(self._value)+1 == COMPRESSED_SIZE  # +1: the prefix
 
     @property
     def checksum(self):

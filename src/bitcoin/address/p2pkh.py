@@ -6,8 +6,8 @@ get the public key hash from the address using the data property
 # Libraries
 from .model import Address
 from .types import Types
-from .helper import DOUBLESHA256_CHECKSUM_SIZE, doublesha256_checksum,\
-    doublesha256_checksum_validate, ripemd160_sha256
+from ..crypto.hash import ripemd160_sha256, checksum
+from ..nets import DEFAULT_NETWORK
 
 # Constants
 PREFIX_SIZE = 1
@@ -18,7 +18,7 @@ PKH_SIZE = 20
 """
     int: size in bytes of all public key hashes
 """
-CHECKSUM_SIZE = DOUBLESHA256_CHECKSUM_SIZE
+CHECKSUM_SIZE = 4
 """
     int: size in bytes for the address suffix checksum
 """
@@ -36,10 +36,9 @@ class P2PKH(Address):
     got to generate / decode easily P2PKH addresses, as checksum calculations
     are performed automagically
     """
-    __slots__ = ["_pkh"]
 
-    def __init__(self, addr_net, public_key=None, public_key_hash=None,
-                 value=None):
+    def __init__(self, public_key=None, addr_net=DEFAULT_NETWORK,
+                 public_key_hash=None, value=None):
         """
         Creates a P2PKH specifying the network and public key or public key
         hash. Also provides the ability to provide the public key hash and
@@ -57,8 +56,8 @@ class P2PKH(Address):
             and checksum
         """
         # Type assertions
-        assert isinstance(public_key, bytes) or public_key is None, """Public
-        key must be a bytes object"""
+        assert isinstance(public_key, bytes) or public_key is None, \
+            "Public key must be a bytes object"
         assert isinstance(public_key_hash, bytes) or public_key_hash is None, \
             """Public key hash must be a bytes object"""
         assert isinstance(value, bytes) or value is None, \
@@ -72,18 +71,21 @@ class P2PKH(Address):
 
         # Direct value set
         if value is not None:
+            assert len(value) == PKH_SIZE + CHECKSUM_SIZE, """The value in a
+            P2PKH address has to be %d bytes length (given has %d)""" % (
+                PKH_SIZE + CHECKSUM_SIZE, len(value)
+            )
             self._value = value
         else:
             # Obtain public key hash and set
             if public_key_hash is not None:
-                if len(public_key_hash) != PKH_SIZE:
-                    raise ValueError("""Unable to set a public key hash with
-                    length %d bytes. Public key hash has to be %d bytes""" % (
-                        len(public_key_hash), PKH_SIZE))
+                assert len(public_key_hash) == PKH_SIZE, """Unable to set a
+                public key hash with length %d bytes. Public key hash has to be
+                %d bytes""" % (len(public_key_hash), PKH_SIZE)
             elif public_key is not None:
                 public_key_hash = ripemd160_sha256(public_key)
             # Update value
-            self._value = public_key_hash + doublesha256_checksum(
+            self._value = public_key_hash + checksum(
                 self._prefix + public_key_hash)
 
     @classmethod
@@ -100,19 +102,18 @@ class P2PKH(Address):
             cls: a new object containing the P2PKH address
         """
         # Check size
-        if len(address) != ADDRESS_SIZE:
-            raise ValueError("""P2PKH Address %s size in bytes is not valid.
-        All P2PKH addresses have %d bytes""" % (address.hex(), ADDRESS_SIZE))
+        assert len(address) == ADDRESS_SIZE, """P2PKH Address %s size in
+        bytes is not valid. All P2PKH addresses have %d bytes""" % (
+            address.hex(), ADDRESS_SIZE)
         # Basic deserialization
         addr = Address.deserialize(address)
         # Check type is correct
-        if addr.type != Types.p2pkh:
-            raise ValueError("""The deserialized address is not a P2PKH
-            address""")
-        return cls(addr.network, value=addr.value)
+        assert addr.type == Types.p2pkh, """The deserialized address is not a
+        P2PKH address"""
+        return cls(addr_net=addr.network, value=addr.value)
 
     @property
-    def pkh(self):
+    def public_key_hash(self):
         """ Extracts the public key hash from the address """
         return self._value[:-CHECKSUM_SIZE]
 
