@@ -138,3 +138,8 @@ class Address(Field, Base58Encodable):
     def value(self):
         """ Returns the address data """
         return self._value
+
+    def __str__(self):
+        """ Returns the field as a printable string """
+        return "<%s:%s(net=%s)>" % (
+            self.encode(), self.__class__.__name__, self._net)

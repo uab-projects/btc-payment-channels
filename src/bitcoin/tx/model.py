@@ -18,11 +18,10 @@ about it
 """
 
 # Libraries
-# # Built-in
-import hashlib
 # # App
-from .interfaces import Serializable
-from .field.general import S4BLEInt, U4BLEInt, VarInt
+from ..crypto.hash import double_sha256
+from ..interfaces import Serializable
+from ..field.general import S4BLEInt, U4BLEInt, VarInt
 
 # Constants
 DEFAULT_VERSION = 1
@@ -50,7 +49,7 @@ http://bitcoin.stackexchange.com/questions/2025/what-is-txins-sequence
 """
 
 
-class Tx(Serializable):
+class BasicTx(Serializable):
     """
     Model of generic Bitcoin transaction, with a version field, inputs, outputs
     and locktime field
@@ -262,8 +261,7 @@ class Tx(Serializable):
         Returns:
             bytes: transaction id as a bytes object
         """
-        return hashlib.sha256(
-            hashlib.sha256(self.serialize()).digest()).digest()
+        return double_sha256(self.serialize())
 
     def __str__(self):
         """
@@ -273,26 +271,22 @@ class Tx(Serializable):
             str: String containing a human-readable transaction
         """
         txt = "Tx Transaction\n"
-        txt += " - version: %d (%s)\n" % \
-            (self._version.value, self._version.serialize().hex())
-        txt += " - [numberOfInputs]: %d (%s)\n" % \
-            (len(self._inputs), VarInt(len(self._inputs)).serialize().hex())
+        txt += " - version: %s\n" % self._version
+        txt += " - [numberOfInputs]: %s\n" % VarInt(len(self._inputs))
         txt += " - inputs:\n"
         i = 0
         for tx_in in self._inputs:
             txt += "\t-- input %02d --\n" % i
             txt += str(tx_in)
             i += 1
-        txt += " - [numberOfOutputs]: %d (%s)\n" % \
-            (len(self._outputs), VarInt(len(self._outputs)).serialize().hex())
+        txt += " - [numberOfOutputs]: %s\n" % VarInt(len(self._outputs))
         txt += " - outputs:\n" % [str(x) for x in self._outputs]
         i = 0
         for tx_out in self._outputs:
             txt += "\t-- output %02d --\n" % i
             txt += str(tx_out)
             i += 1
-        txt += " - locktime: %d (%s)\n" % \
-            (self._locktime.value, self._locktime.serialize().hex())
+        txt += " - locktime: %s\n" % self._locktime
         return txt
 
     def __eq__(self, other):
@@ -306,16 +300,3 @@ class Tx(Serializable):
             bool: true if both transactions are equal (same serialization)
         """
         return self.serialize() == other.serialize()
-
-
-if __name__ == "__main__":
-    print("Testing Tx class")
-    print(" Creating empty transaction")
-    T_EMPTYTX = Tx()
-    print(" Serializing empty transaction")
-    T_EMPTYTX_SER = T_EMPTYTX.serialize()
-    print(" Result of serialization:", T_EMPTYTX_SER.hex())
-    print(" Deserializing previous transaction")
-    T_EMPTYTX_CPY = Tx.deserialize(T_EMPTYTX_SER)
-    print(" Result of deserialization...",
-          "pass" if T_EMPTYTX_CPY == T_EMPTYTX else "failed")

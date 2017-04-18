@@ -8,6 +8,7 @@ from .model import Address
 from .types import Types
 from ..crypto.hash import ripemd160_sha256, checksum
 from ..nets import DEFAULT_NETWORK
+from ..script import pubkey
 
 # Constants
 PREFIX_SIZE = 1
@@ -121,3 +122,8 @@ class P2PKH(Address):
     def checksum(self):
         """ Returns the address checksum """
         return self.value[-CHECKSUM_SIZE:]
+
+    @property
+    def script(self):
+        """ Returns a P2PKH script pubkey that pays to this address """
+        return pubkey.P2PKH(self)

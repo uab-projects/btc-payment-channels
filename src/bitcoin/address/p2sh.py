@@ -9,6 +9,7 @@ http://www.soroushjp.com/2014/12/20/bitcoin-multisig-the-hard-way-understanding-
 from .model import Address
 from .types import Types
 from ..script.redeem import RedeemScript
+from ..script import pubkey
 from ..nets import DEFAULT_NETWORK
 
 # Constants
@@ -105,3 +106,8 @@ class P2SH(Address):
         """ Extracts the script hash from the address, it's the same as the
         address value """
         return self._value
+
+    @property
+    def script(self):
+        """ Returns a P2SH scriptpubkey that pays to this P2SH address """
+        return pubkey.P2SH(self)

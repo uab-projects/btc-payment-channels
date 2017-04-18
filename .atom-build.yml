@@ -8,7 +8,7 @@ targets:
         cmd: "python"
         args:
          - "-m"
-         - "src.bitcoin.tx"
+         - "src.bitcoin.tx.test"
     test-field-general:
         cmd: "python"
         args:

@@ -55,3 +55,9 @@ class Script(Serializable):
     def __len__(self):
         """ Returns the size of the serialized script in bytes """
         return len(self.serialize())
+
+    def __str__(self):
+        """ Prints the script by printing each field of it """
+        return "<%s:%s(%s)>" % (
+            self.serialize().hex(), self.__class__.__name__,
+            " ".join(map(str, self._data)))

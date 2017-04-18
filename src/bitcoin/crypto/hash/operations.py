@@ -36,7 +36,8 @@ def ripemd160(value):
         bytes: 20-byte hash result
     """
     ripemd = hashlib.new(RIPEMD160)
-    return ripemd.update(value).digest()
+    ripemd.update(value)
+    return ripemd.digest()
 
 
 def sha256(value):

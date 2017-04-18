@@ -44,10 +44,3 @@ class P2PKH(ScriptPubKey):
         self._data.append(StackDataField(self._address.public_key_hash))
         self._data.append(OP_EQUALVERIFY)
         self._data.append(OP_CHECKSIG)
-
-    def __str__(self):
-        """
-        Returns a printable script
-        """
-        return "OP_DUP OP_HASH160 %s OP_EQUALVERIFY OP_CHECKSIG" % \
-            (self._address.public_key_hash.hex())

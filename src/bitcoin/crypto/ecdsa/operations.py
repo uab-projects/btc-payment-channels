@@ -4,7 +4,7 @@ Operations performable with ECDSA algorithm
 # Libraries
 # # App
 from .defaults import DEFAULT_CURVE
-from .calculator import fast_multiply
+from .calculator import fast_multiply, ecdsa_raw_sign, der_encode_sig
 
 # Constants
 PRIVATE_KEY_MIN_SIZE = 16
@@ -65,3 +65,25 @@ def validate_private_key(private_key):
         """Unable to set a private key with length %d bytes. Private keys have
         to be between %d-%d bytes""" % (
             len(private_key), PRIVATE_KEY_MIN_SIZE, PRIVATE_KEY_MAX_SIZE)
+
+
+def sign(message, private_key):
+    """
+    Signs the given message bytes with the private key provided using ECDSA
+    default elliptic curve
+
+    Args:
+        message (bytes): message to sign
+        private_key (bytes): private_key used to sign
+
+    Returns:
+        signature (tuple): return v, r, s numbers from signature
+    """
+    return ecdsa_raw_sign(message, private_key)
+
+
+def der_sign(message, private_key):
+    """
+    Same as sign, but returning a DER encoded ECDSA signature
+    """
+    return der_encode_sig(*sign(message, private_key))

@@ -136,3 +136,7 @@ class Base58Encodable(Encodable):
             ValueError: if can't be decoded
         """
         return cls.deserialize(base58.decode(string))
+
+    def __str__(self):
+        """ Returns the field as a printable string """
+        return "<%s:%s>" % (self.encode(), self.__class__.__name__)

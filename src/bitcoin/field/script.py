@@ -22,39 +22,22 @@ class StackDataField(Field):
         _value (bytes|Field): saved value must be either a bytes object or a
         Field object so that can be serialized
     """
-    def serialize(self):
+    @property
+    def serialized_value(self):
+        """ Returns the value serialized as a bytes object """
+        return self._value if isinstance(self._value, bytes) else \
+            self._value.serialize()
+
+    def _push_data_opcodes(self):
         """
-        Serializes the data saved, including the operation to push the
-        serialized data into the stack depending on the serialized data length
-
-        The opcode to push the data depends on the data length:
-        If data length in bytes is
-            >= OP_PUSHDATA_MIN (0x01) and <= OP_PUSHDATA_MAX (0x4b)
-        then serialization is:
-            <number of data bytes to push><data to push>
-        else:
-            Calculate how much bytes does the size of the data to be pushed
-            occupies (if we want to push 65535 bytes of data, then we require
-            two bytes to express 65535 bytes -> ceil(log_2(65535)/8) = 2)
-
-            Knowing the bytes that the length of the data takes to be expressed
-            we have to use OP_PUSHDATA1,2,4 depending if the bytes of data to
-            be pushed can be represented in 1, 2 or 4 bytes.
-
-            After the opcode OP_PUSHDATA we've chosen, we add the size in bytes
-            of the data as a little-endian unsigned integer
-            https://en.bitcoin.it/wiki/Script
-            http://bitcoin.stackexchange.com/questions/2285/script-op-pushdatas
+        Calculates the pushdata opcodes needed to push the data to the stack
+        and returns them as bytes
 
         Returns:
-            bytes: array of bytes so the data stored can be pushed into the
-            stack, adding the opcodes necessary for that to happen
+            bytes: serialized opcodes to push the data of the field into stack
         """
-        # Get data as bytes
-        serialized_data = self._value if isinstance(self._value, bytes) else \
-            self._value.serialize()
         # Get data length
-        serialized_data_length = len(serialized_data)
+        serialized_data_length = len(self.serialized_value)
         bytes_length_size = math.ceil(serialized_data_length.bit_length()/8)
 
         # Generate OP_CODEs so the data is pushed
@@ -85,8 +68,37 @@ class StackDataField(Field):
         else:
             raise ValueError("""Data is too big to be pushed into the stack. No
             opcode exists to push that""")
+        return pushdata_opcodes
 
-        return pushdata_opcodes + serialized_data
+    def serialize(self):
+        """
+        Serializes the data saved, including the operation to push the
+        serialized data into the stack depending on the serialized data length
+
+        The opcode to push the data depends on the data length:
+        If data length in bytes is
+            >= OP_PUSHDATA_MIN (0x01) and <= OP_PUSHDATA_MAX (0x4b)
+        then serialization is:
+            <number of data bytes to push><data to push>
+        else:
+            Calculate how much bytes does the size of the data to be pushed
+            occupies (if we want to push 65535 bytes of data, then we require
+            two bytes to express 65535 bytes -> ceil(log_2(65535)/8) = 2)
+
+            Knowing the bytes that the length of the data takes to be expressed
+            we have to use OP_PUSHDATA1,2,4 depending if the bytes of data to
+            be pushed can be represented in 1, 2 or 4 bytes.
+
+            After the opcode OP_PUSHDATA we've chosen, we add the size in bytes
+            of the data as a little-endian unsigned integer
+            https://en.bitcoin.it/wiki/Script
+            http://bitcoin.stackexchange.com/questions/2285/script-op-pushdatas
+
+        Returns:
+            bytes: array of bytes so the data stored can be pushed into the
+            stack, adding the opcodes necessary for that to happen
+        """
+        return self._push_data_opcodes() + self.serialized_value
 
     @classmethod
     def deserialize(cls, data):
@@ -128,6 +140,12 @@ class StackDataField(Field):
 
         # Resolve data
         return cls(data[offset:data_size+offset])
+
+    def __str__(self):
+        """ Returns the field as a printable string """
+        return "<%s:%s(data_size=%d, pushdata_opcodes=%s)>" % (
+            self.serialize().hex(), self.__class__.__name__,
+            len(self.serialized_value), self._push_data_opcodes().hex())
 
 
 # Module testing

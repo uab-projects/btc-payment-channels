@@ -5,10 +5,20 @@ Source:
 https://github.com/vbuterin/pybitcointools/blob/master/bitcoin/main.py
 """
 # Libraries
+# # Built-in
+import hmac
+import hashlib
+import math
+
+# # App
 from .defaults import DEFAULT_CURVE
 
 
 # Methods
+def int_to_bytes(n):
+    return n.to_bytes(math.ceil(n.bit_length()/8), "big")
+
+
 def inv(a, n):
     """ Extended Euclidean Algorithm """
     if a == 0:
@@ -87,3 +97,42 @@ def fast_multiply(a, n, curve=DEFAULT_CURVE):
 
 def fast_add(a, b, curve=DEFAULT_CURVE):
     return from_jacobian(jacobian_add(to_jacobian(a), to_jacobian(b)))
+
+
+def deterministic_generate_k(msghash, priv):
+    v = b'\x01' * 32
+    k = b'\x00' * 32
+    msghash = int.from_bytes(msghash, "big").to_bytes(32, "big")
+    k = hmac.new(k, v+b'\x00'+priv+msghash, hashlib.sha256).digest()
+    v = hmac.new(k, v, hashlib.sha256).digest()
+    k = hmac.new(k, v+b'\x01'+priv+msghash, hashlib.sha256).digest()
+    v = hmac.new(k, v, hashlib.sha256).digest()
+    return int.from_bytes(hmac.new(k, v, hashlib.sha256).digest(), "big")
+
+
+def der_encode_sig(v, r, s):
+    """
+    @author davidlj95
+    """
+    sequence_byte = b'\x30'
+    r_bytes = int_to_bytes(r)  # NOTE: Why this happens?
+    r_field = b'\x02' + int_to_bytes(len(r_bytes)) + r_bytes
+    s_bytes = int_to_bytes(s)
+    s_field = b'\x02' + int_to_bytes(len(s_bytes)) + s_bytes
+    sequence = r_field + s_field
+    sequence_length = int_to_bytes(len(sequence))
+    return sequence_byte + sequence_length + sequence
+
+
+def ecdsa_raw_sign(msghash, priv, curve=DEFAULT_CURVE):
+    z = int.from_bytes(msghash, "big")
+    k = deterministic_generate_k(msghash, priv)
+    priv = int.from_bytes(priv, "big")
+    r, y = fast_multiply(curve.g, k)
+    s = inv(k, curve.n) * (z + r*priv) % curve.n
+
+    v, r, s = 27+((y % 2) ^ (0 if s * 2 < curve.n else 1)), r, s \
+        if s * 2 < curve.n else curve.n - s
+    # if 'compressed' in get_privkey_format(priv):
+    #     v += 4
+    return v, r, s

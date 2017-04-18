@@ -5,78 +5,94 @@ the P2PKH
 # Libraries
 from .model import ScriptSig
 from ...field.script import StackDataField
-from ..hashcodes import Types
-from ..helper import sign_tx, prepare_tx_to_sign
-from ... import address
-from ...nets import Network
-from bitcoin import main as vbuter
-from .. import pubkey
+from ...crypto.ecdsa import private_to_public
+from ...tx import DEFAULT_HASHTYPE, SignableTx
 
 
 class P2PKH(ScriptSig):
     """
     Basic pay-to-public-key-hash scriptsig.
-    Implemented following the specification in :
-    https://en.bitcoin.it/wiki/Transaction#Pay-to-PubkeyHash
-    Args:
-        _input (TxInput): Input related to that script
-        _hashcode (): the hashcode that specefies which signature to do
-        _signature (bytes): ecdsa signature for the input and transaction
-    """
-    __slots__ = ["_input", "_hashcode", "_signature", "_pubkey"]
 
-    def __init__(self, tx_input):
-        super().__init__()
-        self._input = tx_input
-        self._input.script = self
-        self._hashcode = Types.sighash_all
-        self._signature = bytes()
-        self._pubkey = bytes()
+    Sources:
+    https://en.bitcoin.it/wiki/Transaction#Pay-to-PubkeyHash
+
+    Args:
+        _signature (bytes): ECDSA signature for the input and transaction
+        _public_key (bytes): Public key whose private key generated the
+        signature
+    """
+    __slots__ = ["_input", "_signature", "_public_key"]
+
+    def __init__(self, tx_input=None):
+        """
+        Initializes a P2PKH scriptsig given its input it belongs to
+
+        Args:
+            tx_input (TxInput): input the script belongs to
+        """
+        super().__init__(tx_input)
+        self._signature = None
+        self._public_key = None
+
+    def serialize(self):
+        """
+        Checks that it has been signed before serializing
+        """
+        assert self._signature is not None and self._public_key is not None, \
+            "The P2PKH can't be serialized as it has not been signed"
+        return super().serialize()
 
     def _build(self):
         """
-        Sets the data values with the proper signature once it's done and the
-        public key where the btc's go
-
-        Args:
-            pub (): pubkey in hex format
+        Appends data to the script given the signature and public key
         """
-        # <signature> <pub_key>
-        self._data = [StackDataField(self._signature),
-                      StackDataField(self._pubkey)]
+        self._data = [
+            StackDataField(self._signature), StackDataField(self._public_key)]
 
-    def sign(self, key):
+    def sign(self, key, script, hashtype=DEFAULT_HASHTYPE):
         """
         Due to there's needed a signature, this is the class where the sign
         method should be. Already not decided how to implement that.
 
         Args:
-            key (): private key to sign the transaction related to that script
-            specified in hex.
+            key (bytes): private key to create the signature and public key
+            script (ScriptPubKey): pubkey script to place in the input in order
+            to generate the signature
+            hashtype (HashType.item): hashtype to use to create signature
         """
-        pub = vbuter.privkey_to_pubkey(key)
-        idx = 0  # self._input.tx.inputs.index(self._input)
-        addr = address.P2PKH(Network.testnet, bytes().fromhex(pub))
-        tx = self._input.tx
-        script_to_pay = pubkey.P2PKH(addr)
-        tx = prepare_tx_to_sign(tx, idx, addr, self._hashcode)
-        self._signature = sign_tx(tx, key)
-        self._pubkey = bytes().fromhex(pub)
+        assert isinstance(self._input.tx, SignableTx)
+        self._signature = self._input.tx.sign(
+            key, self._input, script, hashtype)
+        self._public_key = private_to_public(key)
         self._build()
 
     @property
-    def hashcode(self):
-        return self._hashcode
+    def is_signed(self):
+        """ Returns True if has been signed, false otherwise """
+        return self._signature is not None and self._public_key is not None
 
-    @hashcode.setter
-    def hashcode(self, hashcode):
-        """ Sets the hashcode to specify how the signature is done. """
-        # Update values
-        self._hashcode = hashcode
+    @property
+    def signature(self):
+        """ Returns the signature stored in the P2PKH script or None if has
+        not been signed yet"""
+        return self._signature
+
+    @property
+    def public_key(self):
+        """ Returns the public key stored in the P2PKH script or None if has
+        not been signed yet"""
+        return self._public_key
+
+    def __len__(self):
+        """ Returns the script length """
+        return 0 if not self.is_signed else super().__len__()
 
     def __str__(self):
         """
         Returns the scriptSig in a printable way
         """
-        return "<signature=%s> <pubkey=%s>" % \
-            (self._signature.hex(), self._pubkey.hex())
+        return "<%s:%s(%s)>" % (
+            "|Not signed yet|" if not self.is_signed else
+            "|Signature & Public key|",
+            self.__class__.__name__, " ".join(map(str, self._data)))
+        return

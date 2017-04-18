@@ -16,6 +16,9 @@ class Opcode(Field):
     def deserialize(cls, value):
         return cls(value[0])
 
+    def __str__(self):
+        return self.name
+
 
 # Constants
 # Opcodes that mean push the following bytes to the stack

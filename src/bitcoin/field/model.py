@@ -70,6 +70,11 @@ class Field(Serializable):
         """
         return len(self.serialize())
 
+    def __str__(self):
+        """ Returns the field as a printable string """
+        return "<%s:%s(%s)>" % (self.serialize().hex(),
+                                self.__class__.__name__, self._value)
+
     def serialize(self):
         raise NotImplementedError("""Class should have implemented this, but"""
                                   """ developers of the app aren't so fast""")

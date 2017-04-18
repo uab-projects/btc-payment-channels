@@ -110,9 +110,8 @@ class TxOutput(Serializable):
             str: String containing a hex output
         """
         out = ""
-        out += "\t - value: %d BTC (%s)\n" % \
-            (satoshi_to_btc(self._value.value), self._value.serialize().hex())
-        out += "\t - [script_size]: %d (%s)\n" % \
-            (len(self._script), VarInt(len(self._script)).serialize().hex())
+        out += "\t - value: %d BTC %s\n" % \
+            (satoshi_to_btc(self._value.value), self._value)
+        out += "\t - [script_size]: %s\n" % VarInt(len(self._script))
         out += "\t - script: %s\n" % str(self._script)
         return out

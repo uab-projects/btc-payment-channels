@@ -50,9 +50,6 @@ class U2BLEInt(Field):
     def deserialize(cls, v):
         return cls(struct.unpack('<H', v)[0])
 
-    def __str__(self):
-        return "0x{0:02x}".format(self._value)
-
 
 class S4BLEInt(Field):
     """
@@ -70,9 +67,6 @@ class S4BLEInt(Field):
     @classmethod
     def deserialize(cls, v):
         return cls(struct.unpack('<l', v)[0])
-
-    def __str__(self):
-        return "0x{0:02x}".format(self._value)
 
 
 class U4BLEInt(Field):
@@ -92,9 +86,6 @@ class U4BLEInt(Field):
     def deserialize(cls, v):
         return cls(struct.unpack('<L', v)[0])
 
-    def __str__(self):
-        return "0x{0:02x}".format(self._value)
-
 
 class U8BLEInt(Field):
     """
@@ -109,9 +100,6 @@ class U8BLEInt(Field):
     @classmethod
     def deserialize(cls, v):
         return cls(struct.unpack('<Q', v)[0])
-
-    def __str__(self):
-        return "0x{0:02x}".format(self._value)
 
 
 class VarInt(Field):
@@ -194,9 +182,6 @@ class VarInt(Field):
                              """must be 1, 3, 5 or 9 bytes""")
         return cls(value)
 
-    def __str__(self):
-        return "0x{0:02x}".format(self._value)
-
 
 # Character classes
 class VarLEChar(Field):
@@ -220,10 +205,14 @@ class VarLEChar(Field):
         rw_value.reverse()
         return cls(bytes(rw_value))
 
+    def __str__(self):
+        return "<%s:%s()>" % (self.serialize().hex(),
+                              self.__class__.__name__)
+
 
 # Classes tests
 if __name__ == "__main__":
-    # Define test cases
+    # Define test case
     CASES = [
         (0xf0f1, bfh("f1f0"), U2BLEInt),
         (-0x11223344, bfh("BCCCDDEE"), S4BLEInt),
