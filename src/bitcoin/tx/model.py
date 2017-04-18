@@ -77,6 +77,8 @@ class BasicTx(Serializable):
         """
         self._version = S4BLEInt(version)
         self._inputs = inputs if inputs is not None else []
+        for tx_in in self._inputs:
+            tx_in.tx = self
         self._outputs = outputs if outputs is not None else []
         self._locktime = U4BLEInt(locktime)
 

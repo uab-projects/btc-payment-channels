@@ -4,6 +4,7 @@ the P2PKH
 """
 # Libraries
 from .model import ScriptSig
+from ... import address
 from ...field.script import StackDataField
 from ...crypto.ecdsa import private_to_public
 from ...tx import DEFAULT_HASHTYPE, SignableTx
@@ -49,7 +50,7 @@ class P2PKH(ScriptSig):
         self._data = [
             StackDataField(self._signature), StackDataField(self._public_key)]
 
-    def sign(self, key, script, hashtype=DEFAULT_HASHTYPE):
+    def sign(self, key, script=None, hashtype=DEFAULT_HASHTYPE):
         """
         Due to there's needed a signature, this is the class where the sign
         method should be. Already not decided how to implement that.
@@ -61,9 +62,13 @@ class P2PKH(ScriptSig):
             hashtype (HashType.item): hashtype to use to create signature
         """
         assert isinstance(self._input.tx, SignableTx)
+        self._public_key = private_to_public(key)
+        if script is None:
+            # Create a P2PKH pubkey script from key to sign
+            script = address.P2PKH(public_key=self._public_key).script
         self._signature = self._input.tx.sign(
             key, self._input, script, hashtype)
-        self._public_key = private_to_public(key)
+
         self._build()
 
     @property
