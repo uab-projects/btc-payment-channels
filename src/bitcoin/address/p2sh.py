@@ -9,6 +9,7 @@ http://www.soroushjp.com/2014/12/20/bitcoin-multisig-the-hard-way-understanding-
 from .model import Address
 from .types import Types
 from ..script.redeem import RedeemScript
+from ..nets import DEFAULT_NETWORK
 
 # Constants
 PREFIX_SIZE = 1
@@ -34,8 +35,8 @@ class P2SH(Address):
 
     Internal _value field is contains the hash of the reedem script itself
     """
-
-    def __init__(self, addr_net, redeem_script=None, redeem_script_hash=None):
+    def __init__(self, redeem_script=None, addr_net=DEFAULT_NETWORK,
+                 redeem_script_hash=None):
         """
         Initializes a P2SH address with the network it belongs to and the
         redeem script hash or the redeem script, so the redeem script hash
@@ -66,10 +67,9 @@ class P2SH(Address):
 
         # Set value
         if redeem_script_hash is not None:
-            if len(redeem_script_hash) != SH_SIZE:
-                raise ValueError("""Unable to set a reedem script hash with
-                length %d bytes. Script hash has to be %d bytes""" % (
-                    len(redeem_script_hash), SH_SIZE))
+            assert len(redeem_script_hash) == SH_SIZE, """Unable to set a
+            reedem script hash with length %d bytes. Script hash has to be %d
+            bytes""" % (len(redeem_script_hash), SH_SIZE)
             self._value = redeem_script_hash
         else:
             self._value = redeem_script.hash
@@ -88,17 +88,17 @@ class P2SH(Address):
             self: the object with the updated values
         """
         # Check size
-        if len(address) != ADDRESS_SIZE:
-            raise ValueError("""P2SH Address %s size in bytes is not valid.
-        All P2SH addresses have %d bytes""" % (address.hex(), ADDRESS_SIZE))
+        assert len(address) == ADDRESS_SIZE, """P2SH Address %s size in bytes
+        is not valid. All P2SH addresses have %d bytes""" % (
+            address.hex(), ADDRESS_SIZE)
         # Basic deserialization
         addr_obj = Address.deserialize(address)
         # Check type
-        if(addr_obj.type != Types.p2sh):
-            raise ValueError("""The deserialized address is not a P2SH
-            address""")
+        assert addr_obj.type == Types.p2sh, """The deserialized address is not
+        a P2SH address"""
         # Return object
-        return cls(addr_obj.network, redeem_script_hash=addr_obj.value)
+        return cls(addr_net=addr_obj.network,
+                   redeem_script_hash=addr_obj.value)
 
     @property
     def script_hash(self):

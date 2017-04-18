@@ -13,13 +13,15 @@ from .wif import WIF
 # Constants
 CASES = [
     ("1BoatSLRHtKNngkdXEeobR76b53LETtpyT",
-     Network.mainnet, Types.p2pkh),
+     Network.mainnet, Types.p2pkh, {}),
     ("mgcjJSFdTZSajvW2RqYAzHjf9RgmL3BQZ4",
-     Network.testnet, Types.p2pkh),
+     Network.testnet, Types.p2pkh, {}),
     ("2NByaYwku2jFiaUhgnJxo3s695G5v6dzNBf",
-     Network.testnet, Types.p2sh),
+     Network.testnet, Types.p2sh, {}),
     ("5JePNVcofSQgVoLtkLVwDsRsoUgyBKFJa8q17XRUsikDnjDH1Tt",
-     Network.mainnet, Types.wif)
+     Network.mainnet, Types.wif,
+     "0463b2ef743d0a1e5327b15207256c58a8ba60daf0451f0bf9ae5ce40e6e49e26b9ef0e2"
+     "8678fc8691e4b76e9e4a44b876227158caf60c9d9e17c53d1a33ee61c0")
 ]
 """
     dict: test cases, containing a real address, and the supposed network and
@@ -33,7 +35,7 @@ if __name__ == "__main__":
     # Loop and test
     for case in CASES:
         # Initialize test case
-        address_str, net, address_type = case
+        address_str, net, address_type, others = case
         print("  Testing Address %s" % (address_str))
         print("    -> Net: %s, Type: %s" % (net.name, address_type.name))
         # Some variables
@@ -64,17 +66,18 @@ if __name__ == "__main__":
             print("        -> Decoding P2PKH address: ", end='')
             address_obj = P2PKH.decode(address_str)
             print("pass")
-            address_pkh = address_obj.pkh
+            address_pkh = address_obj.public_key_hash
             address_checksum = address_obj.checksum
             print("        -> Guessed pkh: %s (%d-byte)" % (address_pkh.hex(),
                                                             len(address_pkh)))
             print("        -> Guessed checksum: %s (%d-byte)" % (
                 address_checksum.hex(), len(address_checksum)))
             print("        -> Encoding P2PKH address: ")
-            address_obj = P2PKH(net, public_key_hash=address_pkh)
+            address_obj = P2PKH(addr_net=net, public_key_hash=address_pkh)
             print("        -> Got prefix: %s" % address_obj.prefix.hex())
-            print("        -> Got pkh: %s (%d-byte)" % (address_obj.pkh.hex(),
-                                                        len(address_obj.pkh)))
+            print("        -> Got pkh: %s (%d-byte)" % (
+                address_obj.public_key_hash.hex(),
+                len(address_obj.public_key_hash)))
             print("        -> Got checksum: %s (%d-byte)" % (
                 address_obj.checksum.hex(), len(address_obj.checksum)))
             if address_obj.encode() == address_str:
@@ -94,7 +97,7 @@ if __name__ == "__main__":
             print("        -> Guessed checksum: %s (%d-byte)" % (
                 address_checksum.hex(), len(address_checksum)))
             print("        -> Encoding WIF address: ")
-            address_obj = WIF(net, address_pkey)
+            address_obj = WIF(address_pkey, addr_net=net)
             print("        -> Got prefix: %s" % address_obj.prefix.hex())
             print("        -> Got private key: %s (%d-byte)" % (
                 address_obj.private_key.hex(), len(address_obj.private_key)))
@@ -105,3 +108,13 @@ if __name__ == "__main__":
             else:
                 raise ValueError("""Unable to encode address %s from its network
                 and public key hash""" % (address_str))
+            print("        -> Testing WIF address private to public key: ",
+                  end="")
+            public_hex_guess = address_obj.public_key.hex()
+            public_hex = case[3]
+            assert public_hex == public_hex_guess, """Unable to calculate
+            public key from private key. Public key got is %s, should be
+            %s""" % (
+                public_hex_guess, public_hex
+            )
+            print("pass")

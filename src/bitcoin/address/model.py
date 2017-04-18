@@ -11,13 +11,11 @@ https://en.bitcoin.it/wiki/Address
 https://en.bitcoin.it/wiki/List_of_address_prefixes
 """
 # Libraries
-from bitcoin import base58
 from ..field.model import Field
 from ..interfaces import Base58Encodable
 from ..nets import Network
 from .types import Types
 from . import prefix
-from . import helper
 
 
 class Address(Field, Base58Encodable):
@@ -75,7 +73,10 @@ class Address(Field, Base58Encodable):
             addr_prefix = prefix.get(addr_net, addr_type.name)
         elif addr_prefix is not None:
             # Got a prefix
-            addr_net, addr_type, addr_prefix = helper.guess_prefix(addr_prefix)
+            guess_info = prefix.guess(addr_prefix)
+            assert guess_info is not None, "The prefix (%s) is not valid" % (
+                addr_prefix.hex())
+            addr_net, addr_type = guess_info
         else:
             raise ValueError("""You must specify either a valid network and
             type of address combination or a prefix as a bytes object to build
@@ -93,13 +94,6 @@ class Address(Field, Base58Encodable):
         """
         return self.prefix + self.value
 
-    def encode(self):
-        """
-        Returns the address as a base-58 string of the array of bytes (the
-        serialized address)
-        """
-        return base58.encode(self.serialize())
-
     @classmethod
     def deserialize(cls, address):
         """
@@ -114,27 +108,16 @@ class Address(Field, Base58Encodable):
         Returns:
             self: the object with the updated values
         """
-        addr_net, addr_type, addr_prefix = helper.guess_prefix(address)
+        guess_info = prefix.guess(address)
+        # Validate given information
+        assert guess_info is not None, """The address (%s) is not valid, no
+        valid prefix has been found""" % (address.hex())
+        addr_net, addr_type = guess_info
+        # Get prefix
+        addr_prefix = prefix.get(addr_net, addr_type.name)
+        # Get value
         value = address[len(addr_prefix):]
-        return cls(addr_type, addr_net, value=value)
-
-    @classmethod
-    def decode(cls, address):
-        """
-        Given a base-58 encoded address, decodes it and deserializes it saving
-        the information of the address passed into the object. Raises an
-        exception if the address given can't be decoded
-
-        Args:
-            address (str): base-58 encoded address string
-
-        Returns:
-            Address: the address itself, filled with the values
-
-        Raises:
-            ValueError: if address can't be decoded
-        """
-        return cls.deserialize(base58.decode(address))
+        return cls(addr_prefix=addr_prefix, value=value)
 
     @property
     def network(self):
