@@ -6,8 +6,6 @@ secrets, etc...
 # Libraries
 from .model import ScriptSig
 from ...field.script import StackDataField
-from ..redeem import RedeemScript
-from ..pay import PayScript
 
 
 class P2SH(ScriptSig):
@@ -26,15 +24,19 @@ class P2SH(ScriptSig):
     __slots__ = ["_payment_script", "_reedem_script"]
 
     def __init__(self, redeem_script, payment_script):
-        self._payment_script = redeem_script
-        self._reedem_script = payment_script
+        self._payment_script = payment_script
+        self._reedem_script = redeem_script
 
     def serialize(self):
+        self._build()
+        return super().serialize()
+
+    def _build(self):
         """
         Serializes the P2SH scriptSig, by joining payment and redeem script
         """
-        return self._payment_script.serialize() +\
-            StackDataField(self._reedem_script.serialize()).serialize()
+        self._data = [self._payment_script, StackDataField(
+            self._reedem_script.serialize())]
 
     @property
     def redeem_script(self):

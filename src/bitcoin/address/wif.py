@@ -25,16 +25,21 @@ CHECKSUM_SIZE = 4
 """
     int: size in bytes for the address suffix checksum
 """
-UNCOMPRESSED_SIZE = 32
+WIF_UNCOMPRESSED_SIZE = 32
 """
     int: normal WIF address size in bytes
     source:
     https://github.com/vbuterin/pybitcointools/blob/master/bitcoin/main.py
 """
-COMPRESSED_SIZE = 33
+WIF_COMPRESSED_SIZE = 33
 """
     int: compressed WIF address size in bytes
     source:
+    https://github.com/vbuterin/pybitcointools/blob/master/bitcoin/main.py
+"""
+PRIVATE_COMPRESSED_SIZE = 32
+"""
+    int: normal private compressed size in bytes
     source:
     https://github.com/vbuterin/pybitcointools/blob/master/bitcoin/main.py
 """
@@ -101,7 +106,7 @@ class WIF(Address):
         """
         private_key = self._value[:-CHECKSUM_SIZE]
         if self.compressed:
-            private_key = private_key[:UNCOMPRESSED_SIZE]
+            private_key = private_key[:PRIVATE_COMPRESSED_SIZE]
         return private_key
 
     @property
@@ -112,7 +117,7 @@ class WIF(Address):
     @property
     def compressed(self):
         """ Calculates if the address is compressed or not """
-        return len(self._value)+1 == COMPRESSED_SIZE  # +1: the prefix
+        return len(self._value[:-CHECKSUM_SIZE]) == WIF_COMPRESSED_SIZE
 
     @property
     def checksum(self):

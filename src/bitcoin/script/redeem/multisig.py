@@ -12,47 +12,51 @@ from ...field.script import StackDataField
 class MultiSig(RedeemScript):
     """
     Models a Multisignature script
+
+    Attributes:
+        _keys_needed (int): number of keys needed to unlock the script funds
+        _keys_total (int): number of keys in the multisig script
     """
-    __slots__ = ["_sigNeeded", "_sigTotal", "_pubKeys"]
+    __slots__ = ["_keys_needed", "_keys_total", "_public_keys"]
 
-    def __init__(self, needed, total):
+    def __init__(self, needed, total=None):
         super().__init__()
-        self._sigNeeded = needed
-        self._sigTotal = total
-        self._pubKeys = []
+        self._keys_needed = needed
+        self._keys_total = total if total is not None else needed
+        self._public_keys = []
 
-    def add_PubKey(self, pubkey):
+    def add_public_key(self, public_key):
         """
-        Adds a pubkey to the addressess list in order to have one more
+        Adds a public key to the addressess list in order to have one more
         address to allow the payment
 
         Args:
-            pubkey (): PubKey to append to the list of PubKey
+            public_key (bytes): public key to append to the list of public keys
         """
-        assert len(self._pubKeys) < self._sigTotal, "Too many addressess"
-        self._pubKeys.append(pubkey)
+        assert len(self._public_keys) < self._keys_total, "Too many addressess"
+        self._public_keys.append(public_key)
 
-    def remove_PubKey(self, pubkey):
+    def remove_public_key(self, public_key):
         """
-        Removes a pubkey to the addressess list
+        Removes a public key from the addresses list
 
         Args:
-            pubkey (): PubKey to remove of the list of PubKey
+            public_key (bytes): public key to remove of the list of public keys
         """
-        assert pubkey in self._pubKeys, "Pubkey not in list"
-        self._pubKeys.remove(pubkey)
+        assert public_key in self._public_keys, "Pubkey not in list"
+        self._public_keys.remove(public_key)
 
     def _build(self):
         """
         Initializes the script with the opcodes and the data necessary.
         """
         # OP_M <pk_n> .. <pk_1> OP_N OP_CMS
-        assert len(self._pubKeys) == self._sigTotal, """That scripts needs
-        exactly %d pubkeys""" % self._sigTotal
-        self._data.append(get_op_code_n(self._sigNeeded))
-        for pk in self._pubKeys:
+        assert len(self._public_keys) == self._keys_total, """That scripts needs
+        exactly %d pubkeys""" % self._keys_total
+        self._data.append(get_op_code_n(self._keys_needed))
+        for pk in self._public_keys:
             self._data.append(StackDataField(pk))
-        self._data.append(get_op_code_n(self._sigTotal))
+        self._data.append(get_op_code_n(self._keys_total))
         self._data.append(OP_CMS)
 
     @property

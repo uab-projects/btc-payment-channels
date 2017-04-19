@@ -36,16 +36,23 @@ def private_to_public(key):
     """
     # Convert to int?
     bytes_format = False
+    compressed = False
     if isinstance(key, bytes):
+        compressed = True
         key = int.from_bytes(key, "big")
         bytes_format = True
+
     assert isinstance(key, int), """private key to convert must be either an
     int or bytes object"""
     # Calculate public key
     public = fast_multiply(DEFAULT_CURVE.g, key)
     # Reconvert
     if bytes_format:
-        public = b'\x04' + public[0].to_bytes(32, "big") + \
+        if compressed:
+            public = bytes([(public[1] % 2) + 2]) + \
+                public[0].to_bytes(32, "big")
+        else:
+            public = b'\x04' + public[0].to_bytes(32, "big") + \
                  public[1].to_bytes(32, "big")
     # Return public key
     return public
