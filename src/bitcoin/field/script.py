@@ -143,9 +143,11 @@ class StackDataField(Field):
 
     def __str__(self):
         """ Returns the field as a printable string """
-        return "<%s:%s(data_size=%d, pushdata_opcodes=%s)>" % (
-            self.serialize().hex(), self.__class__.__name__,
-            len(self.serialized_value), self._push_data_opcodes().hex())
+        pushdata = "[%s:%s(size=%d)] " % (
+            self._push_data_opcodes().hex(), "OP_PUSHDATA",
+            len(self.serialized_value))
+        data = "[%s:DATA()]" % self.serialized_value.hex()
+        return pushdata + data
 
 
 # Module testing
