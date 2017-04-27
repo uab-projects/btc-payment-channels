@@ -21,7 +21,7 @@ about it
 # # App
 from ..crypto.hash import double_sha256
 from ..interfaces import Serializable
-from ..field.general import S4BLEInt, U4BLEInt, VarInt
+from ..field.general import S4BLEInt, U4BLEInt, VarInt, VarLEChar
 
 # Constants
 DEFAULT_VERSION = 1
@@ -263,7 +263,7 @@ class BasicTx(Serializable):
         Returns:
             bytes: transaction id as a bytes object
         """
-        return double_sha256(self.serialize())
+        return  VarLEChar(double_sha256(self.serialize())).serialize()
 
     def __str__(self):
         """

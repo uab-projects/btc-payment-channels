@@ -115,9 +115,13 @@ def der_encode_sig(v, r, s):
     @author davidlj95
     """
     sequence_byte = b'\x30'
-    r_bytes = int_to_bytes(r)  # NOTE: Why this happens?
+    r_bytes = int_to_bytes(r)
+    if r_bytes.hex()[0] in "89abcdef":
+        r_bytes = b'\x00' + r_bytes
     r_field = b'\x02' + int_to_bytes(len(r_bytes)) + r_bytes
     s_bytes = int_to_bytes(s)
+    if s_bytes.hex()[0] in "89abcdef":
+        s_bytes = b'\x00' + s_bytes
     s_field = b'\x02' + int_to_bytes(len(s_bytes)) + s_bytes
     sequence = r_field + s_field
     sequence_length = int_to_bytes(len(sequence))

@@ -11,6 +11,7 @@ from .types import Types
 from ..script.redeem import RedeemScript
 from ..script import pubkey
 from ..nets import DEFAULT_NETWORK
+from ..crypto.hash import checksum
 
 # Constants
 PREFIX_SIZE = 1
@@ -24,6 +25,10 @@ SH_SIZE = 20
 ADDRESS_SIZE = PREFIX_SIZE + SH_SIZE
 """
     int: size in byte of all P2SH addresses
+"""
+CHECKSUM_SIZE = 4
+"""
+    int: size in bytes for the address suffix checksum
 """
 
 
@@ -74,6 +79,8 @@ class P2SH(Address):
             self._value = redeem_script_hash
         else:
             self._value = redeem_script.hash
+        # Add checksum
+        self._value += checksum(self._prefix + self._value)
 
     @classmethod
     def deserialize(cls, address):
@@ -102,10 +109,15 @@ class P2SH(Address):
                    redeem_script_hash=addr_obj.value)
 
     @property
+    def checksum(self):
+        """ Returns the p2sh address checksum """
+        return self._value[-CHECKSUM_SIZE:]
+
+    @property
     def script_hash(self):
         """ Extracts the script hash from the address, it's the same as the
         address value """
-        return self._value
+        return self._value[:-CHECKSUM_SIZE]
 
     @property
     def script(self):

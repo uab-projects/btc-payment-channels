@@ -10,9 +10,9 @@ if __name__ == "__main__":
 
     # Transaction fields
     utxo_id = bytes().fromhex(
-        "28057b23fa98c3ca52db843c4804ae9db87f0da4682ef734da38ad8f4300abeb")
+        "69670f310aae3830e510adcce745129d64a9282f32e562996a788632bf1d49da")
     utxo_num = 0
-    utxo_value = 0.99997703
+    utxo_value = 0.99817703
     fees = 0.0009
     to_pay = utxo_value - fees
     keys_num = len(sys.argv) - 1
@@ -67,15 +67,12 @@ if __name__ == "__main__":
         TxOutput(to_pay_addr.script, btc=to_pay))
 
     # Sign
-
     # # Add signatures
     for key in keys_multisig:
         pay_script.add_signature(redeem_tx.sign(
-            key.private_key, 0, redeem_address.script))
+            key.private_key, 0, redeem_script))
 
     pay_script._build()
-
     # Get transaction
     print(redeem_tx)
     print(redeem_tx.serialize().hex())
-    print(len(redeem_tx.serialize().hex()))

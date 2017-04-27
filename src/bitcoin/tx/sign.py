@@ -72,8 +72,8 @@ class SignableTx(BasicTx):
         assert input_num >= 0 and input_num < len(self.inputs), """Input number
         does not match any input (%d is not 0 <= num < %d)""" % (
             input_num, len(self.inputs))
-        assert isinstance(script_pubkey, script.pubkey.ScriptPubKey), \
-            "The script pubkey must be a ScriptPubKey object"
+        # assert isinstance(script_pubkey, script.pubkey.ScriptPubKey), \
+        #    "The script pubkey must be a ScriptPubKey object"
         assert isinstance(hashtype, HashTypes), """The hashtype must be a """
         """HashType enum item"""
         # Copy transaction
