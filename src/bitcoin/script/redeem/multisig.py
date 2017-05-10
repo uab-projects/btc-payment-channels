@@ -62,17 +62,3 @@ class MultiSig(RedeemScript):
     @property
     def pay_script(self):
         return pay.MultiSig(self)
-
-
-"""
-RAW IDEA
-ExpiringMultisig
-
-    MultiSig(2,2) >>
-        def _build(self):
-            # self._data.append(OP_OVER)
-            # Normal script
-            super()._build()
-            self._data +=
-            [OP_NOTIF, <time>, OP_CLTV, OP_DROP, <pubkey>, OP_CS, OP_ENDIF]
-"""

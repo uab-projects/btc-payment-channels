@@ -2,9 +2,12 @@
 Interface for reedem scripts used in P2SH modes
 """
 # Libraries
+# # Builtin
 from abc import abstractmethod
+
+# # App
 from ..pay import PayScript
-import hashlib
+from ...crypto.hash import ripemd160_sha256
 from ..general import Script
 
 
@@ -35,7 +38,4 @@ class RedeemScript(Script):
         Returns:
             bytes: hash
         """
-        sha256 = hashlib.sha256(self.serialize()).digest()
-        ripemd = hashlib.new("ripemd160")
-        ripemd.update(sha256)
-        return ripemd.digest()
+        return ripemd160_sha256(self.serialize())
