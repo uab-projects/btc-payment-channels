@@ -15,12 +15,20 @@ class MultiSig(RedeemScript):
 
     Attributes:
         _keys_needed (int): number of keys needed to unlock the script funds
+            if no keys needed specified, the resulting script will have no
+            needed keys specified, meaning that can be used for
+            TimeLockedScripts, for example
         _keys_total (int): number of keys in the multisig script
+            if not specified, will be the same as keys_needed
+            if neither keys needed are specified or total keys, an error will
+            be triggered
     """
     __slots__ = ["_keys_needed", "_keys_total", "_public_keys"]
 
-    def __init__(self, needed, total=None):
+    def __init__(self, needed=None, total=None):
         super().__init__()
+        assert needed is not None or total is not None, "You must specify " + \
+            "at least the needed keys or the total keys"
         self._keys_needed = needed
         self._keys_total = total if total is not None else needed
         self._public_keys = []
@@ -51,9 +59,11 @@ class MultiSig(RedeemScript):
         Initializes the script with the opcodes and the data necessary.
         """
         # OP_M <pk_n> .. <pk_1> OP_N OP_CMS
+        self._data = []
         assert len(self._public_keys) == self._keys_total, """That scripts needs
         exactly %d pubkeys""" % self._keys_total
-        self._data.append(get_op_code_n(self._keys_needed))
+        if self._keys_needed is not None:
+            self._data.append(get_op_code_n(self._keys_needed))
         for pk in self._public_keys:
             self._data.append(StackDataField(pk))
         self._data.append(get_op_code_n(self._keys_total))

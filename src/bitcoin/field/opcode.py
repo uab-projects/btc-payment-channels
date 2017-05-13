@@ -42,11 +42,16 @@ OP_PUSHDATA_MAX_BYTES = 2**(2**4)
 """
 
 # Opcode definitions
-OP_0 = type('OP_0', (Opcode,), {
+OP_0 = OP_FALSE = type('OP_0', (Opcode,), {
     "name": "OP_0",
     "description": """An empty array of bytes is pushed onto the stack. """
                    """(This is not a no-op: an item is added to the stack.)"""
 })(0)
+
+OP_1 = OP_TRUE = type('OP_1', (Opcode,), {
+    "name": "OP_1",
+    "description": """The number 1 is pushed onto the stack."""
+})(81)
 
 OP_2 = type('OP_2', (Opcode,), {
     "name": "OP_2",

@@ -25,6 +25,19 @@ class RedeemScript(Script):
         """ Creates a payment script to pay this redeem script """
         return PayScript(self)
 
+    def _build(self):
+        """
+        Builds the redeem script
+        """
+        raise NotImplementedError("You must implement this")
+
+    def serialize(self):
+        """
+        Builds the redeem script and serializes it
+        """
+        self._build()
+        return super().serialize()
+
     @property
     def hash(self):
         """

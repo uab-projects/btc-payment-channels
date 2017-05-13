@@ -3,7 +3,9 @@ Defines RedeemScripts that contain time conditions in order to spend funds
 """
 # Libraries
 # # App
+from .. import pay
 from .model import RedeemScript
+from ...field.general import VarInt
 from ...field.opcode import OP_IF, OP_ELSE, OP_ENDIF, OP_CHECKLOCKTIMEVERIFY, \
                             OP_DROP
 
@@ -22,32 +24,31 @@ class TimeLockedScript(RedeemScript):
     non-standard lifetime and timelocked scripts
 
     Attributes:
-        _lifetime (RedeemScript): script that will allow to redeem the utxo
+        _lifetime (Script): script that will allow to redeem the utxo
                                   at any time
-        _timelocked (RedeemScript): script that will allwo to redeem the utxo
+        _timelocked (Script): script that will allwo to redeem the utxo
                                   after the specified time
-        _lifetime_params (Serializable): parameters to add to the lifetime
-            script so it is spendable before the time specified
-        _timelocked_params (Serializable): parameters to add to the timelocked
-            script so it is spendable after the given time
         _locktime (VarInt):
             time after which the timelocked script becomes valid
+        _unlocked_script (Serializable):
+        _timelocked_params (Serializable): parameters to add to the timelocked
+            script so it is spendable after the given time
         Time is specified as BIP-65:
         https://github.com/bitcoin/bips/blob/master/bip-0065.mediawiki
     """
-    __slots__ = ["_lifetime_script", "_timelocked_script", "_locktime"]
+    __slots__ = ["_lifetime_script", "_timelocked_script", "_unlocked_script",
+                 "_locktime"]
 
-    def __init__(self, lifetime, timelocked, locktime, lifetime_params=None,
-                 timelocked_params=None):
+    def __init__(self, locktime, lifetime_script=None, unlocked_script=None,
+                 timelocked_script=None):
         """
         Initializes the time locked script with the lifetime script, timelocked
         script and locktime
         """
-        self._lifetime_script = lifetime
-        self._timelocked_script = timelocked
         self._locktime = locktime
-        self._lifetime_params = lifetime_params
-        self._timelocked_params = timelocked_params
+        self._lifetime_script = lifetime_script
+        self._timelocked_script = timelocked_script
+        self._unlocked_script = unlocked_script
 
     def _build(self):
         """
@@ -57,26 +58,25 @@ class TimeLockedScript(RedeemScript):
             OP_IF
                 <time> OP_CHECKLOCKTIMEVERIFY OP_DROP
                 <timelocked_script>
-                <timelocked_params>
             OP_ELSE
-                <lifetime_params>
+                <unlocked_script>
             OP_ENDIF
             <lifetime_script>
         """
         # Switch if / else to spend after / before the time lock gets
         self._data = [OP_IF]
         # CASE TO SPEND AFTER LOCKED TIME:
-        self._data += [self._locktime, OP_CHECKLOCKTIMEVERIFY, OP_DROP]
-        self._data += [self._timelocked_script]
-        if self._timelocked_params is not None:
-            self._data += [self._timelocked_params]
+        self._data += [VarInt(self._locktime), OP_CHECKLOCKTIMEVERIFY, OP_DROP]
+        if self._timelocked_script is not None:
+            self._data += [self._timelocked_script]
         # CASE TO SPEND BEFORE LOCKED TIME:
-        if self._lifetime_params is not None:
-            self._data += [OP_ELSE, self._lifetime_params]
+        if self._unlocked_script is not None:
+            self._data += [OP_ELSE, self._unlocked_script]
         # End of conditions
         self._data += [OP_ENDIF]
         # Lifetime script
-        self._data.append(self._lifetime_script)
+        if self._lifetime_script is not None:
+            self._data += [self._lifetime_script]
 
     @property
     def lifetime_script(self):
@@ -89,3 +89,7 @@ class TimeLockedScript(RedeemScript):
     @property
     def locktime(self):
         return self._locktime
+
+    @property
+    def pay_script(self):
+        return pay.TimeLockedScript(self)

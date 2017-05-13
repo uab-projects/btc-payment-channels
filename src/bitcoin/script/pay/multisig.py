@@ -2,6 +2,7 @@ from .model import PayScript
 from ...field.opcode import OP_0
 from ...field.script import StackDataField
 
+
 class MultiSig(PayScript):
     """
     """

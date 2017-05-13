@@ -12,11 +12,15 @@ from ..interfaces import Serializable
 class Script(Serializable):
     """
     Main scripting class of the application
+
+    Attributes:
+        _data (list): list of serializable items of the script (opcodes
+        and data)
     """
     __slots__ = ["_data"]
 
-    def __init__(self):
-        self._data = []
+    def __init__(self, data=None):
+        self._data = [] if data is None else data
 
     def serialize(self):
         """

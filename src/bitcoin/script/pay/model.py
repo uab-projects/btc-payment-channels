@@ -7,6 +7,7 @@ from ..general import Script
 
 class PayScript(Script):
     """
+    A PayScript contains the data to spend a RedeemScript
     """
     __slots__ = ["_redeem"]
 
