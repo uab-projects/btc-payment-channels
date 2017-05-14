@@ -13,10 +13,10 @@ from ..bitcoin.field.script import StackDataField
 if __name__ == "__main__":
     # Transaction fields
     utxo_id = bytes().fromhex(
-        "8f54e3adb8a2e34f9df1d2dcd41af8946c364e24dc70f64575966c4e93552206")
+        "7c1de75e8de345b84c2577a50fcc0dd2935269b75e6e9b055ec773c2091cfd4c ")
     utxo_num = 0
-    utxo_value = 0.99637703
-    fees = 0.0009
+    utxo_value = 0.49994000
+    fees = 0.00005
     to_pay = utxo_value - fees
 
     keys_num = len(sys.argv) - 2
@@ -29,6 +29,8 @@ if __name__ == "__main__":
 
     # Create transaction to send funds to a multisig expiring P2SH
     transaction = SignableTx()
+    lock_time = 1123183
+    lock_time_bytes = lock_time.to_bytes(4, "big")
 
     unlocked_script = redeem.MultiSig(keys_multisig_num)
     tl_script = script.Script([StackDataField(key_p2pkh.public_key), OP_CS])
@@ -36,7 +38,7 @@ if __name__ == "__main__":
     redeem_script = redeem.TimeLockedScript(
         unlocked_script=unlocked_script,
         timelocked_script=tl_script,
-        locktime=1123183
+        locktime=lock_time_bytes
     )
     # Fill multisig
     for key in keys_multisig:
@@ -72,7 +74,7 @@ if __name__ == "__main__":
 
     # Add inputs
     redeem_tx.add_input(TxInput(utxo_id, utxo_num, script.sig.P2SH(
-        redeem_script, pay_script), sequence=0xfffffffe))
+        redeem_script, pay_script)))
 
     # Add outputs
     redeem_tx.add_output(

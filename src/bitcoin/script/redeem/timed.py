@@ -66,7 +66,8 @@ class TimeLockedScript(RedeemScript):
         # Switch if / else to spend after / before the time lock gets
         self._data = [OP_IF]
         # CASE TO SPEND AFTER LOCKED TIME:
-        self._data += [StackDataField(self._locktime), OP_CHECKLOCKTIMEVERIFY, OP_DROP]
+        self._data += [StackDataField(self._locktime),
+                       OP_CHECKLOCKTIMEVERIFY, OP_DROP]
         if self._timelocked_script is not None:
             self._data += [self._timelocked_script]
         # CASE TO SPEND BEFORE LOCKED TIME:
