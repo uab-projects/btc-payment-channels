@@ -5,7 +5,7 @@ Defines RedeemScripts that contain time conditions in order to spend funds
 # # App
 from .. import pay
 from .model import RedeemScript
-from ...field.general import VarInt
+from ...field.script import StackDataField
 from ...field.opcode import OP_IF, OP_ELSE, OP_ENDIF, OP_CHECKLOCKTIMEVERIFY, \
                             OP_DROP
 
@@ -66,7 +66,7 @@ class TimeLockedScript(RedeemScript):
         # Switch if / else to spend after / before the time lock gets
         self._data = [OP_IF]
         # CASE TO SPEND AFTER LOCKED TIME:
-        self._data += [VarInt(self._locktime), OP_CHECKLOCKTIMEVERIFY, OP_DROP]
+        self._data += [StackDataField(self._locktime), OP_CHECKLOCKTIMEVERIFY, OP_DROP]
         if self._timelocked_script is not None:
             self._data += [self._timelocked_script]
         # CASE TO SPEND BEFORE LOCKED TIME:

@@ -72,7 +72,7 @@ if __name__ == "__main__":
 
     # Add inputs
     redeem_tx.add_input(TxInput(utxo_id, utxo_num, script.sig.P2SH(
-        redeem_script, pay_script), sequence=0xffffffff))
+        redeem_script, pay_script), sequence=0xfffffffe))
 
     # Add outputs
     redeem_tx.add_output(
