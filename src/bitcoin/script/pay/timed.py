@@ -38,43 +38,43 @@ class TimeLockedScript(PayScript):
         self.selection = selection
         self._script = script
 
-        def _build(self):
-            """
-            Builds the PayScript from the script and selection
-            """
-            self._data = [self._script, self._selection]
+    def _build(self):
+        """
+        Builds the PayScript from the script and selection
+        """
+        self._data = [self._script, self._selection]
 
-        @property
-        def script(self):
-            return self._script
+    @property
+    def script(self):
+        return self._script
 
-        @script.setter
-        def script(self, script):
-            self._script = script
+    @script.setter
+    def script(self, script):
+        self._script = script
 
-        @property
-        def selection(self):
-            return self._selection
+    @property
+    def selection(self):
+        return self._selection
 
-        @property
-        def multisig(self):
-            """ Returns a MultiSig PayScript if it's needed to be used """
-            return MultiSig(self._redeem)
+    @property
+    def multisig(self):
+        """ Returns a MultiSig PayScript if it's needed to be used """
+        return MultiSig(self._redeem)
 
-        @selection.setter
-        def selection(self, selection):
-            assert isinstance(selection, int) or \
-                   isinstance(selection, Opcode) or selection is None, \
-                   "The selection must be either an integer, opcode or None" \
-                   + " to select the default, no-time-locked script"
-            # Convert and check selection
-            if isinstance(selection, Opcode):
-                assert isinstance(selection, OP_1) or \
-                 isinstance(selection, OP_0), "The OPCODE has to be 0 or 1"
-            elif isinstance(selection, int):
-                assert selection == 0 or selection == 1, "The selection " + \
-                    "must be 0 or 1"
-                selection = OP_0 if selection == 0 else OP_1
-            else:
-                selection = OP_1
-            self._selection = selection
+    @selection.setter
+    def selection(self, selection):
+        assert isinstance(selection, int) or \
+               isinstance(selection, Opcode) or selection is None, \
+               "The selection must be either an integer, opcode or None" \
+               + " to select the default, no-time-locked script"
+        # Convert and check selection
+        if isinstance(selection, Opcode):
+            assert isinstance(selection, OP_1) or \
+             isinstance(selection, OP_0), "The OPCODE has to be 0 or 1"
+        elif isinstance(selection, int):
+            assert selection == 0 or selection == 1, "The selection " + \
+                "must be 0 or 1"
+            selection = OP_0 if selection == 0 else OP_1
+        else:
+            selection = OP_1
+        self._selection = selection
