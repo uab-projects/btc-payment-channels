@@ -15,3 +15,16 @@ class PayScript(Script):
         """ Creates a payment script given its redeem script to pay to """
         super().__init__()
         self._redeem = redeem
+
+    def _build(self):
+        """
+        Builds the redeem script
+        """
+        raise NotImplementedError("You must implement this")
+
+    def serialize(self):
+        """
+        Builds the redeem script and serializes it
+        """
+        self._build()
+        return super().serialize()

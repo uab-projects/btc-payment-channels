@@ -107,7 +107,7 @@ class TxInput(Serializable):
         """ Sets the transaction reference """
         self._tx = trans
 
-    def __str__(self):
+    def __str__(self, space="", input_n=None):
         """
         Prints the input in a useful, printable way
 
@@ -115,10 +115,12 @@ class TxInput(Serializable):
             str: String containing a hex input
         """
         inp = ""
-        inp += "\t - previous_tx:   %s\n" % self._utxo_id
-        inp += "\t - output_num:    %s\n" % self._utxo_n
-        inp += "\t - [script_size]: %s\n" % VarInt(len(self._script))
-        inp += "\t - script:        %s\n" % str(self._script)
-        inp += "\t - sequence:      %s \n" % self._sequence
-
+        if input_n is not None:
+            inp += "%s// input %02d\n" % (space, input_n)
+        inp += "%spreviousTx:   %s\n" % (space, self._utxo_id)
+        inp += "%soutputNum:    %s\n" % (space, self._utxo_n)
+        inp += "%sscriptSize:   %s\n" % (space, VarInt(len(self._script)))
+        inp += "%sscript:       %s\n" % (space, self._script.__str__(
+            space+"    "))
+        inp += "%ssequence:     %s\n" % (space, self._sequence)
         return inp

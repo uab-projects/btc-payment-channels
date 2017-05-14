@@ -102,7 +102,7 @@ class TxOutput(Serializable):
         """ Sets the output script """
         self._script = script
 
-    def __str__(self):
+    def __str__(self, space="", output_n=None):
         """
         Prints the output in a useful, printable way
 
@@ -110,8 +110,10 @@ class TxOutput(Serializable):
             str: String containing a hex output
         """
         out = ""
-        out += "\t - value: %f BTC %s\n" % \
-            (satoshi_to_btc(self._value.value), self._value)
-        out += "\t - [script_size]: %s\n" % VarInt(len(self._script))
-        out += "\t - script: %s\n" % str(self._script)
+        if output_n is not None:
+            out += "%s// output %02d\n" % (space, output_n)
+        out += "%svalue:        %s (%f BTC)\n" % \
+            (space, self._value, satoshi_to_btc(self._value.value))
+        out += "%sscriptSize:   %s\n" % (space, VarInt(len(self._script)))
+        out += "%sscript:       %s\n" % (space, str(self._script))
         return out

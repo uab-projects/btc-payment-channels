@@ -23,6 +23,7 @@ class MultiSig(PayScript):
     def _build(self):
         """
         """
+        self._data = []
         self._data.append(OP_0)
         for sign in self._signatures:
             self._data.append(StackDataField(sign))

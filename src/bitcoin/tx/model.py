@@ -263,32 +263,37 @@ class BasicTx(Serializable):
         Returns:
             bytes: transaction id as a bytes object
         """
-        return  VarLEChar(double_sha256(self.serialize())).serialize()
+        return VarLEChar(double_sha256(self.serialize())).serialize()
 
-    def __str__(self):
+    def __str__(self, space=""):
         """
         Prints the transaction in a beautiful, printable way
 
         Returns:
             str: String containing a human-readable transaction
         """
-        txt = "Tx Transaction\n"
-        txt += " - version: %s\n" % self._version
-        txt += " - [numberOfInputs]: %s\n" % VarInt(len(self._inputs))
-        txt += " - inputs:\n"
+        txt = "%sTx Transaction\n" % space
+        space += "    "
+        txt += "{\n"
+        txt += "%sid: %s\n" % (space, self.id.hex())
+        txt += "%sversion: %s\n" % (space, self._version)
+        txt += "%snumberOfInputs: %s\n" % (space, VarInt(len(self._inputs)))
+        txt += "%sinputs: [\n" % space
         i = 0
         for tx_in in self._inputs:
-            txt += "\t-- input %02d --\n" % i
-            txt += str(tx_in)
+            txt += tx_in.__str__(space*2, i)
             i += 1
-        txt += " - [numberOfOutputs]: %s\n" % VarInt(len(self._outputs))
-        txt += " - outputs:\n" % [str(x) for x in self._outputs]
+        txt += "%s]\n" % space
+        txt += "%snumberOfOutputs: %s\n" % \
+               (space, VarInt(len(self._outputs)))
+        txt += "%soutputs: [\n" % space
         i = 0
         for tx_out in self._outputs:
-            txt += "\t-- output %02d --\n" % i
-            txt += str(tx_out)
+            txt += tx_out.__str__(space*2, i)
             i += 1
-        txt += " - locktime: %s\n" % self._locktime
+        txt += "%s]\n" % space
+        txt += "%slocktime: %s\n" % (space, self._locktime)
+        txt += "}\n"
         return txt
 
     def __eq__(self, other):

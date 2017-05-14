@@ -92,7 +92,7 @@ class P2PKH(ScriptSig):
         """ Returns the script length """
         return 0 if not self.is_signed else super().__len__()
 
-    def __str__(self):
+    def __str__(self, space):
         """
         Returns the scriptSig in a printable way
         """

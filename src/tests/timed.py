@@ -13,7 +13,7 @@ from ..bitcoin.field.script import StackDataField
 if __name__ == "__main__":
     # Transaction fields
     utxo_id = bytes().fromhex(
-        "ee593224697caf46b3ee950c276aa6f9c5fe115cc6e195ed6fb18315fae8a3ea")
+        "8f54e3adb8a2e34f9df1d2dcd41af8946c364e24dc70f64575966c4e93552206")
     utxo_num = 0
     utxo_value = 0.99637703
     fees = 0.0009
@@ -36,7 +36,7 @@ if __name__ == "__main__":
     redeem_script = redeem.TimeLockedScript(
         unlocked_script=unlocked_script,
         timelocked_script=tl_script,
-        locktime=1122746
+        locktime=1123183
     )
     # Fill multisig
     for key in keys_multisig:
@@ -72,7 +72,7 @@ if __name__ == "__main__":
 
     # Add inputs
     redeem_tx.add_input(TxInput(utxo_id, utxo_num, script.sig.P2SH(
-        redeem_script, pay_script)))
+        redeem_script, pay_script), sequence=0xffffffff))
 
     # Add outputs
     redeem_tx.add_output(
@@ -94,7 +94,7 @@ if __name__ == "__main__":
         # # Normal checksig
         # # Add signature
         signature = redeem_tx.sign(key_p2pkh.private_key, 0, redeem_script)
-        pay_script.script = script.Script([signature])
+        pay_script.script = script.Script([StackDataField(signature)])
 
     # Get transaction
     print(redeem_tx)

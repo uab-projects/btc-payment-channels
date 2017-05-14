@@ -21,11 +21,11 @@ class P2SH(ScriptSig):
         payment_script (Script): script with payment values
         reedem_script (ReedemScript): script with payment requirements
     """
-    __slots__ = ["_payment_script", "_reedem_script"]
+    __slots__ = ["_payment_script", "_redeem_script"]
 
     def __init__(self, redeem_script, payment_script):
         self._payment_script = payment_script
-        self._reedem_script = redeem_script
+        self._redeem_script = redeem_script
 
     def serialize(self):
         self._build()
@@ -36,7 +36,7 @@ class P2SH(ScriptSig):
         Serializes the P2SH scriptSig, by joining payment and redeem script
         """
         self._data = [self._payment_script, StackDataField(
-            self._reedem_script.serialize())]
+            self._redeem_script.serialize())]
 
     @property
     def redeem_script(self):
@@ -57,3 +57,13 @@ class P2SH(ScriptSig):
     def payment_script(self, script):
         """ Sets the payment script """
         self._payment_script = script
+
+    def __str__(self, space):
+        txt = "\n%s// %s\n" % (space, self.__class__.__name__)
+        txt += "%sPaymentScript:\n%s\n" % (
+                space,
+                self._payment_script.__str__(space+"    "))
+        txt += "%sRedeemScript:\n%s\n" % (
+                space,
+                self._redeem_script.__str__(space+"    "))
+        return txt
