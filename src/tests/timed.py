@@ -8,15 +8,15 @@ from ..bitcoin import script
 from ..bitcoin import address
 from ..bitcoin.script import redeem, pay
 from ..bitcoin.field.opcode import OP_CS
-from ..bitcoin.field.script import StackDataField
+from ..bitcoin.field.script import StackDataField, ScriptNum
 
 
 if __name__ == "__main__":
     # Transaction fields
     utxo_id = bytes().fromhex(
-        "19bef45830fb02ecc30bf6aef7ad046277206bbd182e1d4387c18bfed1c2c0ff")
-    utxo_num = 1
-    utxo_value = 1
+        "8dc10f058a0c6ee6ba481cfdb8cd350a5b406f76a024cdcbd96a87931372cb46")
+    utxo_num = 0
+    utxo_value = 0.99990000
     fees = 0.00005
     to_pay = utxo_value - fees
 
@@ -31,9 +31,7 @@ if __name__ == "__main__":
 
     # Create transaction to send funds to a multisig expiring P2SH
     transaction = SignableTx()
-    lock_time = 1123490 + 5
-    lock_time_bytes = lock_time.to_bytes(
-        math.ceil(lock_time.bit_length()/8), "little")
+    lock_time = ScriptNum(1123520)
 
     unlocked_script = redeem.MultiSig(keys_multisig_num)
     tl_script = script.Script([StackDataField(key_p2pkh.public_key), OP_CS])
@@ -41,7 +39,7 @@ if __name__ == "__main__":
     redeem_script = redeem.TimeLockedScript(
         unlocked_script=unlocked_script,
         timelocked_script=tl_script,
-        locktime=lock_time_bytes
+        locktime=lock_time
     )
     # Fill multisig
     for key in keys_multisig:
@@ -70,8 +68,10 @@ if __name__ == "__main__":
     to_pay = to_pay - fees
     to_pay_addr = address.P2PKH(public_key=key_p2pkh.public_key)
 
+    lock_time = 1123500
+
     # Create transaction
-    redeem_tx = SignableTx(locktime=lock_time+1)
+    redeem_tx = SignableTx(locktime=lock_time)
 
     # Pay script
     pay_script = redeem_script.pay_script

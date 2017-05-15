@@ -150,6 +150,33 @@ class StackDataField(Field):
         return pushdata + data
 
 
+class ScriptNum(Field):
+    """
+    Defines a field containing an integetr number that can be used inside a
+    StackDataField to perform script operations
+
+    According to:
+    https://github.com/bitcoin/bitcoin/blob/master/src/script/script.h#L353-L371
+
+    Its serialization is a little-endian signed integer with the minimum bytes
+    possible. The signed / unsigned meaning is given by the first bit (sign,
+    magnitude coding)
+    """
+
+    def serialize(self):
+        bit_length = self._value.bit_length()
+        byte_length = math.ceil(bit_length/8)
+        value_bytes = self._value.to_bytes(byte_length, "little")
+        if self._value < 0:
+            # Negative number
+            if bit_length >= byte_length*8:
+                # Do we need another byte for indicating sign?
+                self._value = '\x00' + self._value
+            self._value[0] = self._value[0] & 0x80
+            raise NotImplementedError("pending to test")
+        return value_bytes
+
+
 # Module testing
 if __name__ == "__main__":
     # Define test cases
