@@ -13,9 +13,9 @@ from ..bitcoin.field.script import StackDataField
 if __name__ == "__main__":
     # Transaction fields
     utxo_id = bytes().fromhex(
-        "7c1de75e8de345b84c2577a50fcc0dd2935269b75e6e9b055ec773c2091cfd4c ")
+        "bb8e35f88812d01838ddb3f7655d44e1fc2c8d002eb421134054a848fa1e1348")
     utxo_num = 0
-    utxo_value = 0.49994000
+    utxo_value = 0.1
     fees = 0.00005
     to_pay = utxo_value - fees
 
@@ -29,8 +29,8 @@ if __name__ == "__main__":
 
     # Create transaction to send funds to a multisig expiring P2SH
     transaction = SignableTx()
-    lock_time = 1123183
-    lock_time_bytes = lock_time.to_bytes(4, "big")
+    lock_time = 2
+    lock_time_bytes = lock_time.to_bytes(1, "big")
 
     unlocked_script = redeem.MultiSig(keys_multisig_num)
     tl_script = script.Script([StackDataField(key_p2pkh.public_key), OP_CS])
