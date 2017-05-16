@@ -5,7 +5,7 @@ the P2PKH
 # Libraries
 from .model import ScriptSig
 from ... import address
-from ...field.script import StackDataField
+from ...field.script import ScriptData
 from ...crypto.ecdsa import private_to_public
 from ...tx import DEFAULT_HASHTYPE, SignableTx
 
@@ -48,7 +48,7 @@ class P2PKH(ScriptSig):
         Appends data to the script given the signature and public key
         """
         self._data = [
-            StackDataField(self._signature), StackDataField(self._public_key)]
+            ScriptData(self._signature), ScriptData(self._public_key)]
 
     def sign(self, key, script=None, hashtype=DEFAULT_HASHTYPE):
         """

@@ -5,7 +5,7 @@ secrets, etc...
 """
 # Libraries
 from .model import ScriptSig
-from ...field.script import StackDataField
+from ...field.script import ScriptData
 
 
 class P2SH(ScriptSig):
@@ -35,7 +35,7 @@ class P2SH(ScriptSig):
         """
         Serializes the P2SH scriptSig, by joining payment and redeem script
         """
-        self._data = [self._payment_script, StackDataField(
+        self._data = [self._payment_script, ScriptData(
             self._reedem_script.serialize())]
 
     @property

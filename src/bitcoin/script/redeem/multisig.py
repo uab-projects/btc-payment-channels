@@ -6,7 +6,7 @@ from .. import pay
 from .model import RedeemScript
 from .helper import get_op_code_n
 from ...field.opcode import OP_CMS
-from ...field.script import StackDataField
+from ...field.script import ScriptData
 
 
 class MultiSig(RedeemScript):
@@ -65,7 +65,7 @@ class MultiSig(RedeemScript):
         if self._keys_needed is not None:
             self._data.append(get_op_code_n(self._keys_needed))
         for pk in self._public_keys:
-            self._data.append(StackDataField(pk))
+            self._data.append(ScriptData(pk))
         self._data.append(get_op_code_n(self._keys_total))
         self._data.append(OP_CMS)
 

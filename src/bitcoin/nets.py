@@ -1,5 +1,6 @@
 """
-Defines the Bitcoin networks available
+Defines the Bitcoin networks available as constants to agree around the
+module
 """
 from enum import Enum, unique
 

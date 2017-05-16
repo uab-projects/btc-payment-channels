@@ -5,7 +5,7 @@ Models a Bitcoin scriptPubKey for the P2PKH payment method
 from .model import ScriptPubKey
 from ... import address
 from ...field.opcode import OP_DUP, OP_HASH160, OP_EQUALVERIFY, OP_CHECKSIG
-from ...field.script import StackDataField
+from ...field.script import ScriptData
 
 
 class P2PKH(ScriptPubKey):
@@ -41,6 +41,6 @@ class P2PKH(ScriptPubKey):
         """
         self._data.append(OP_DUP)
         self._data.append(OP_HASH160)
-        self._data.append(StackDataField(self._address.public_key_hash))
+        self._data.append(ScriptData(self._address.public_key_hash))
         self._data.append(OP_EQUALVERIFY)
         self._data.append(OP_CHECKSIG)
