@@ -8,7 +8,7 @@ from ..bitcoin import script
 from ..bitcoin import address
 from ..bitcoin.script import redeem, pay
 from ..bitcoin.field.opcode import OP_CS
-from ..bitcoin.field.script import StackDataField, ScriptNum
+from ..bitcoin.field.script import ScriptData, ScriptNum
 
 
 if __name__ == "__main__":
@@ -34,7 +34,7 @@ if __name__ == "__main__":
     lock_time = ScriptNum(1123520)
 
     unlocked_script = redeem.MultiSig(keys_multisig_num)
-    tl_script = script.Script([StackDataField(key_p2pkh.public_key), OP_CS])
+    tl_script = script.Script([ScriptData(key_p2pkh.public_key), OP_CS])
     # Redeem script
     redeem_script = redeem.TimeLockedScript(
         unlocked_script=unlocked_script,
@@ -100,7 +100,7 @@ if __name__ == "__main__":
         # # Normal checksig
         # # Add signature
         signature = redeem_tx.sign(key_p2pkh.private_key, 0, redeem_script)
-        pay_script.script = script.Script([StackDataField(signature)])
+        pay_script.script = script.Script([ScriptData(signature)])
 
     # Get transaction
     print(redeem_tx)

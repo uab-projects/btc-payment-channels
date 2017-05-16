@@ -12,11 +12,11 @@ from .helper import bfh
 from . import test
 
 
-class StackDataField(Field):
+class ScriptData(Field):
     """
-    A stack data field allows to include data in a script that has to be pushed
-    to the stack, that will automatically include the push data OP_CODE
-    required so the data is correctly pushed into the stack.
+    A script data field allows to include data in a script that has to be
+    pushed to the stack, that will automatically include the push data
+    operation code required so the data is correctly pushed into the stack.
 
     Attributes:
         _value (bytes|Field): saved value must be either a bytes object or a
@@ -181,14 +181,14 @@ class ScriptNum(Field):
 if __name__ == "__main__":
     # Define test cases
     CASES = [
-        (bfh("f0f1f2f3"), bfh("04f0f1f2f3"), StackDataField),
+        (bfh("f0f1f2f3"), bfh("04f0f1f2f3"), ScriptData),
         (bfh("01"*0xff), OP_PUSHDATA1.serialize()+bfh("ff"+"01"*0xff),
-         StackDataField),
+         ScriptData),
         (bfh("02"*0xffff), OP_PUSHDATA2.serialize()+bfh("ffff"+"02"*0xffff),
-         StackDataField),
+         ScriptData),
         (bfh("04"*0xffffff), OP_PUSHDATA4.serialize() +
             bfh("ffffff00"+"04"*0xffffff),
-         StackDataField)
+         ScriptData)
     ]
     # Run tests
     print("Starting serialization test")

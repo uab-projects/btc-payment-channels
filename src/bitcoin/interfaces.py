@@ -1,25 +1,26 @@
 # -*- coding: utf-8 -*-
 """
-Defines functional models as interfaces to specify the functionality some
-classes must provide.
+Defines functional models as interfaces to specify the functionality most
+classes must provide in order to fulfill the puzzle-friendliness
 """
-
 # Libraries
 # # Built-in
 from abc import ABCMeta, abstractmethod
 # # External
 from bitcoin import base58
 
+
 class Serializable(object):
     """
     Defines a model for a class that will be serializable, this means, will
     have methods to transform the class into an array of bytes and to create
-    a new class using an array of bytes.
+    a new object of the class from an array of bytes.
 
     Those arrays of bytes will always have to be compatible with the bytes
     specified in the Bitcoin protocol
 
-    The arrays of bytes must be an instance of Python 3 bytes object
+    When we say an array of bytes we mean an instance of Python 3 `bytes`
+    object
     """
     __metaclass__ = ABCMeta
 
@@ -27,7 +28,7 @@ class Serializable(object):
     def serialize(self):
         """
         Serializes the contents of the current class into an array of bytes so
-        the class can be represented as an array of bytes compatible with what
+        the object can be represented as an array of bytes compatible with what
         the Bitcoin protocol specifies
 
         Returns:
@@ -40,12 +41,13 @@ class Serializable(object):
     def deserialize(cls, data):
         """
         Deserializes the contents of the data passed to try make them fit into
-        the class model. If the data has invalid length or invalid data,
-        appropiate exceptions will be raised.
+        the class model to create a new object from this data. If the data has
+        invalid length or invalid data, appropiate exceptions will be raised.
 
-        Please implement this method in a way that can receive more data than
-        the strictly required in variable sized fields, so it will help caller
-        methods to detect size after calling deserialization
+        Please implement this method in a way that the bytes data can be sized
+        more than the strictly required size, specially for variable sized
+        fields, so it will help caller methods to detect size after calling
+        deserialization
 
         As a class method, the method returns an instance of a filled object
 
@@ -71,7 +73,7 @@ class Encodable(object):
     objects and be deserialized from them. An encodable class when encoded
     contains enough information to then decode the output and obtain the same
     information but with the difference that when encoding, the result is not
-    an array of bytes and is an object, most times a string.
+    an array of bytes and is an object, most times a string object
     """
     __metaclass__ = ABCMeta
 
@@ -90,9 +92,8 @@ class Encodable(object):
     @classmethod
     def decode(cls, obj):
         """
-        Decodes the object passed and tries to set the attributes and status of
-        the object according to the data the object passed contains into a new
-        object of the class
+        Decodes the object passed and tries to generate a new object of the
+        class with the contents of the passed object
 
         Args:
             cls (class): class to decode the object into
@@ -111,6 +112,8 @@ class Base58Encodable(Encodable):
     """
     Same as previous Encodable interface, but specifies that will be encoded
     into a base58 string and decoded from a base58 string.
+
+    Also provides a default, and valid implementation
     """
 
     def encode(self):

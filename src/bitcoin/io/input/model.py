@@ -5,14 +5,23 @@ or more of those inputs.
 The low-level specification of the input is there:
 https://en.bitcoin.it/wiki/Protocol_documentation#tx
 """
+# Libraries
+# # App
 from ...interfaces import Serializable
 from ...field.general import U4BLEInt, VarLEChar, VarInt
 from ...script.sig import ScriptSig
 
+# Constants
+DEFAULT_SEQUENCE = 0xffffffff
+"""
+    int: default sequence number for inputs. Final value
+"""
+
 
 class TxInput(Serializable):
     """
-    A basic input for a transaction
+    Models a transaction input, containing the UTXO reference (aka outpoint),
+    script and sequence number
 
     Attributes:
         _utxo_id (VarLEChar): the hash of the referenced transaction
@@ -23,7 +32,8 @@ class TxInput(Serializable):
     """
     __slots__ = ["_utxo_id", "_utxo_n", "_script", "_sequence", "_tx"]
 
-    def __init__(self, utxo_id, utxo_n, script=None, sequence=0xffffffff):
+    def __init__(self, utxo_id, utxo_n, script=None,
+                 sequence=DEFAULT_SEQUENCE):
         """
         Initializes a transaction input given its UTXO id and number, the
         spending scriptsig and the optional sequence number
@@ -34,6 +44,7 @@ class TxInput(Serializable):
             script (ScriptSig): scriptsig to spend the funds
             sequence (int): sequence number
         """
+        # Save details
         self._utxo_id = VarLEChar(utxo_id)
         self._utxo_n = U4BLEInt(utxo_n)
         self._script = ScriptSig()
@@ -46,6 +57,9 @@ class TxInput(Serializable):
         self._sequence = U4BLEInt(sequence)
 
     def serialize(self):
+        """
+        Serializes the transaction input into a bytes object
+        """
         serialized = []
         # Add utxoID
         serialized.append(self._utxo_id.serialize())
@@ -65,7 +79,7 @@ class TxInput(Serializable):
         """
         Not implemented yet
         """
-        pass
+        raise NotImplementedError("Pending to implement")
 
     @property
     def utxo_id(self):

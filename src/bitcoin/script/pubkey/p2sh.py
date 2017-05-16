@@ -5,7 +5,7 @@ Models a Bitcoin scriptPubKey for the P2SH method
 from .model import ScriptPubKey
 from ... import address
 from ...field.opcode import OP_HASH160, OP_EQUAL
-from ...field.script import StackDataField
+from ...field.script import ScriptData
 
 
 class P2SH(ScriptPubKey):
@@ -35,5 +35,5 @@ class P2SH(ScriptPubKey):
         Creates the script with the opcodes of a P2SH scriptPubKey
         """
         self._data.append(OP_HASH160)
-        self._data.append(StackDataField(self._address.script_hash))
+        self._data.append(ScriptData(self._address.script_hash))
         self._data.append(OP_EQUAL)
