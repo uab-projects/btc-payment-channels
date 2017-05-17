@@ -1,30 +1,29 @@
 """
-Models a PaymentScript used in P2SH
+Models a PaymentScript used in P2SH. Basically contains data to spend a
+redeem script. Be careful if you don't include just data, because therefore
+the transaction will be non-standard
 """
 # Libraries
-from ..general import Script
+from ..model import Script
 
 
 class PayScript(Script):
     """
-    A PayScript contains the data to spend a RedeemScript
+    A PayScript contains the data needed to spend a RedeemScript
     """
     __slots__ = ["_redeem"]
 
-    def __init__(self, redeem):
-        """ Creates a payment script given its redeem script to pay to """
-        super().__init__()
+    def __init__(self, redeem, data=None):
+        """
+        Creates a payment script given its redeem script to pay to and
+        optionally some data to add to the payment script
+        """
+        super().__init__(data)
         self._redeem = redeem
 
-    def _build(self):
+    @property
+    def redeem_script(self):
         """
-        Builds the redeem script
+        Returns the related redeem script
         """
-        raise NotImplementedError("You must implement this")
-
-    def serialize(self):
-        """
-        Builds the redeem script and serializes it
-        """
-        self._build()
-        return super().serialize()
+        return self._redeem

@@ -11,6 +11,7 @@ https://en.bitcoin.it/wiki/Address
 https://en.bitcoin.it/wiki/List_of_address_prefixes
 """
 # Libraries
+# # App
 from ..field.model import Field
 from ..interfaces import Base58Encodable
 from ..nets import Network

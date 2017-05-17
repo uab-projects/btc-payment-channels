@@ -26,7 +26,10 @@ data type it's containing:
 """
 
 # Libraries
+# # Built-in
 import struct
+
+# # App
 from .model import Field
 from . import test
 from .helper import bfh

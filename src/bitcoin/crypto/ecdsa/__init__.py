@@ -1,6 +1,8 @@
 """
 Contains ECDSA algorithms (just curves used in Bitcoin)
 """
+# Libraries
+# # App
 from .curve import CurveParams
 from .secp256k1 import Secp256k1
 from .defaults import DEFAULT_CURVE

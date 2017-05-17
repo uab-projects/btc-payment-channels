@@ -6,6 +6,7 @@ Information extracted from:
 http://www.soroushjp.com/2014/12/20/bitcoin-multisig-the-hard-way-understanding-raw-multisignature-bitcoin-transactions/
 """
 # Libraries
+# # App
 from .model import Address
 from .types import Types
 from ..script.redeem import RedeemScript

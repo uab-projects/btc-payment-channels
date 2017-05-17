@@ -1,6 +1,6 @@
 """
 Models a P2PKH scriptSig script, autobuilding the necessary opcodes to create
-the P2PKH
+the P2PKH script containing the signature and public key
 """
 # Libraries
 from .model import ScriptSig
@@ -22,7 +22,7 @@ class P2PKH(ScriptSig):
         _public_key (bytes): Public key whose private key generated the
         signature
     """
-    __slots__ = ["_input", "_signature", "_public_key"]
+    __slots__ = ["_signature", "_public_key"]
 
     def __init__(self, tx_input=None):
         """
@@ -35,57 +35,66 @@ class P2PKH(ScriptSig):
         self._signature = None
         self._public_key = None
 
-    def serialize(self):
-        """
-        Checks that it has been signed before serializing
-        """
-        assert self._signature is not None and self._public_key is not None, \
-            "The P2PKH can't be serialized as it has not been signed"
-        return super().serialize()
-
     def _build(self):
         """
-        Appends data to the script given the signature and public key
+        Creates the scriptSig containing the signature and public key
         """
+        # Check it has been signed
+        assert self._signature is not None and self._public_key is not None, \
+            "The P2PKH can't be serialized as it has not been signed"
         self._data = [
             ScriptData(self._signature), ScriptData(self._public_key)]
 
     def sign(self, key, script=None, hashtype=DEFAULT_HASHTYPE):
         """
-        Due to there's needed a signature, this is the class where the sign
-        method should be. Already not decided how to implement that.
+        Signs the transaction the script belongs to with the key given,
+        changing the input to sign script (this related input) with the passed
+        script, and with the hashtype given
 
         Args:
             key (bytes): private key to create the signature and public key
             script (ScriptPubKey): pubkey script to place in the input in order
-            to generate the signature
+            to generate the signature. If not specified, will be a P2PKH one
+            automatically generated from the public key of the key given
             hashtype (HashType.item): hashtype to use to create signature
         """
-        assert isinstance(self._input.tx, SignableTx)
+        # Assert can be signed
+        assert self._input is not None and self._input.tx is not None, \
+            "To sign the P2PKH scriptSig, there must be an input related " + \
+            "to the scriptSig that is related to a transaction"
+        assert isinstance(self._input.tx, SignableTx), "To sign the P2PKH " + \
+            "scriptSig, the related transaction must be a SignableTx"
+        # Get public key
         self._public_key = private_to_public(key)
+        # Create script if necessary
         if script is None:
             # Create a P2PKH pubkey script from key to sign
             script = address.P2PKH(public_key=self._public_key).script
+        # Sign and add
         self._signature = self._input.tx.sign(
             key, self._input, script, hashtype)
 
-        self._build()
-
     @property
     def is_signed(self):
-        """ Returns True if has been signed, false otherwise """
+        """
+        Returns True if has been signed, false otherwise
+        """
         return self._signature is not None and self._public_key is not None
 
     @property
     def signature(self):
-        """ Returns the signature stored in the P2PKH script or None if has
-        not been signed yet"""
+        """
+        Returns the signature stored in the P2PKH script or None if has
+        not been signed yet
+        """
         return self._signature
 
     @property
     def public_key(self):
-        """ Returns the public key stored in the P2PKH script or None if has
-        not been signed yet"""
+        """
+        Returns the public key stored in the P2PKH script or None if has
+        not been signed yet
+        """
         return self._public_key
 
     def __len__(self):

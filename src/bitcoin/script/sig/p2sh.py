@@ -10,7 +10,7 @@ from ...field.script import ScriptData
 
 class P2SH(ScriptSig):
     """
-    Models a pay to script hash scriptSig, containing in one side the reedem
+    Models a pay-to-script-hash scriptSig, containing in one side the reedem
     script payment values (signatures, secrets, ...) and the redeem script
     itself. The class allows to define separately the spend requirements and
     the redeem script so when serialized they are put together as in a P2SH,
@@ -23,7 +23,8 @@ class P2SH(ScriptSig):
     """
     __slots__ = ["_payment_script", "_redeem_script"]
 
-    def __init__(self, redeem_script, payment_script):
+    def __init__(self, redeem_script, payment_script, tx_input=None):
+        super().__init__(tx_input, None)
         self._payment_script = payment_script
         self._redeem_script = redeem_script
 
@@ -35,6 +36,11 @@ class P2SH(ScriptSig):
         """
         Serializes the P2SH scriptSig, by joining payment and redeem script
         """
+        # Check redeem and payment provided
+        assert self._payment_script is not None, "Can't build the P2SH " + \
+            "scriptSig, the payment script has not been set"
+        assert self._redeem_script is not None, "Can't build the P2SH " + \
+            "scriptSig, the redeem script has not been set"
         self._data = [self._payment_script, ScriptData(
             self._reedem_script.serialize())]
 

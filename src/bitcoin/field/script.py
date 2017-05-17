@@ -1,9 +1,11 @@
 """
-Defines fields that can appear in a script, including OP_CODES from opcode
-module.
+Defines fields that can appear in a script
 """
 # Libraries
+# # Built-in
 import math
+
+# # App
 from .model import Field
 from .general import U2BLEInt, U4BLEInt
 from .opcode import OP_PUSHDATA_MIN, OP_PUSHDATA_MAX, OP_PUSHDATA1, \

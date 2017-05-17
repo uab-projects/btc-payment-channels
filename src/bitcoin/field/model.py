@@ -2,8 +2,8 @@
 """
 Defines a model for all bitcoin protocol fields
 """
-
 # Libraries
+# # App
 from ..interfaces import Serializable
 
 

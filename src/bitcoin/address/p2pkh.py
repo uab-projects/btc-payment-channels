@@ -4,6 +4,7 @@ validate the checksum when deserializing or decoding and properties to later
 get the public key hash from the address using the data property
 """
 # Libraries
+# # App
 from .model import Address
 from .types import Types
 from ..crypto.hash import ripemd160_sha256, checksum

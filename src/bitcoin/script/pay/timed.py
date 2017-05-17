@@ -1,6 +1,6 @@
 # Libraries
 # # App
-from ...field.opcode import Opcode, OP_0, OP_1
+from ...field import Opcode, OP_0, OP_1
 from .model import PayScript
 from .multisig import MultiSig
 
@@ -17,7 +17,7 @@ class TimeLockedScript(PayScript):
     """
     __slots__ = ["_selection", "_script"]
 
-    def __init__(self, redeem, selection=None, script=None):
+    def __init__(self, redeem, script=None, selection=None):
         """
         Initializes a TimeLockedScript payment script, selecting by default
         the normal condition (not time-locked) and optionally setting also
@@ -33,7 +33,6 @@ class TimeLockedScript(PayScript):
             be set
         """
         super().__init__(redeem)
-
         # Save
         self.selection = selection
         self._script = script
@@ -69,12 +68,48 @@ class TimeLockedScript(PayScript):
                + " to select the default, no-time-locked script"
         # Convert and check selection
         if isinstance(selection, Opcode):
+            # OPCODE used
             assert isinstance(selection, OP_1) or \
              isinstance(selection, OP_0), "The OPCODE has to be 0 or 1"
         elif isinstance(selection, int):
+            # Int or boolean used
+            selection = int(selection)  # For booleans
             assert selection == 0 or selection == 1, "The selection " + \
                 "must be 0 or 1"
             selection = OP_0 if selection == 0 else OP_1
         else:
+            # Default
             selection = OP_1
         self._selection = selection
+
+    @property
+    def spend_before_locktime(self):
+        """
+        Returns True if the selection set is to spend the redeem script before
+        the locktime arrives (or at anytime depending on how it's coded)
+        """
+        return self._selection == OP_0
+
+    @spend_before_locktime.setter
+    def spend_before_locktime(self, value):
+        """
+        Allows to set the spend_before_locktime property by changing the
+        selection
+        """
+        self.selection = not value
+
+    @property
+    def spend_after_locktime(self):
+        """
+        Returns true if the selection set is to spend the redeem script after
+        the lock time, using the timelocked_script.
+        """
+        return self._selection == OP_1
+
+    @spend_after_locktime.setter
+    def spend_after_locktime(self, value):
+        """
+        Allows to set the spend_after_locktime property by changing the
+        selection
+        """
+        self.selection = value

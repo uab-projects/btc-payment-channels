@@ -2,6 +2,7 @@
 Models Bitcoin addresses and provides methods to check and validate them
 """
 # Libraries
+# # App
 from .model import Address
 from .types import Types
 from .p2pkh import P2PKH

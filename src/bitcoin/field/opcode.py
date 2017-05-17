@@ -1,6 +1,7 @@
-""" Defines a base class to create OP_CODES in scripts and defines all the used
-OP_CODES instances in the application """
-
+"""
+Defines a base class to create OP_CODES in scripts and defines all the used
+OP_CODES instances in the application
+"""
 # Libraries
 from .model import Field
 
@@ -41,6 +42,20 @@ OP_PUSHDATA_MAX_BYTES = 2**(2**4)
     OP_PUSHDATA4
 """
 
+OP_N_MIN = 0
+"""
+    int: minimum number whose opcode pushes that number to the stack
+"""
+OP_N_MAX = 16
+"""
+    int: maximum number whose opcode pushes that number to the stack
+"""
+OP_N_BASE = 80
+"""
+    int: the base of OP_1 -> OP_N_MAX opcode number
+        (OP_1=OP_N_BASE+1, OP_2 = OP_N_BASE+2, ...)
+"""
+
 # Opcode definitions
 OP_0 = OP_FALSE = type('OP_0', (Opcode,), {
     "name": "OP_0",
@@ -51,12 +66,40 @@ OP_0 = OP_FALSE = type('OP_0', (Opcode,), {
 OP_1 = OP_TRUE = type('OP_1', (Opcode,), {
     "name": "OP_1",
     "description": """The number 1 is pushed onto the stack."""
-})(81)
+})(OP_N_BASE + 1)
 
 OP_2 = type('OP_2', (Opcode,), {
     "name": "OP_2",
     "description": "The number in the word name (2) is pushed onto the stack."
-})(82)
+})(OP_N_BASE + 2)
+
+
+# Methods
+def get_op_code_n(n):
+    """
+    Given an integer n, greater or equal than 0 (OP_N_MIN) and less or equal
+    than 16 (OP_N_MAX), returns the associated opcode that pushes that number
+    into the stack.
+
+    Asserts if n is not in range
+
+    Args:
+        n (int): integer to get opcode that pushes that integer to the stack to
+    """
+    assert OP_N_MIN <= n <= OP_N_MAX, "The number %d can't be pushed to " + \
+        "the stack with a single opcode"
+    if n == 0:
+        return OP_0
+    elif n == 1:
+        return OP_1
+    elif n == 2:
+        return OP_2
+    else:
+        return type("OP_%d" % n, (Opcode,), {
+            "name": "OP_%d" % n,
+            "description": "The number %d is pushed onto the stack" % n
+        })(OP_N_BASE + n)
+
 
 OP_PUSHDATA1 = type('OP_PUSHDATA1', (Opcode,), {
     "name": "OP_PUSHDATA1",

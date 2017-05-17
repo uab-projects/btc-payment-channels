@@ -5,9 +5,8 @@ Defines RedeemScripts that contain time conditions in order to spend funds
 # # App
 from .. import pay
 from .model import RedeemScript
-from ...field.script import StackDataField
-from ...field.opcode import OP_IF, OP_ELSE, OP_ENDIF, OP_CHECKLOCKTIMEVERIFY, \
-                            OP_DROP
+from ...field import OP_IF, OP_ELSE, OP_ENDIF, OP_CHECKLOCKTIMEVERIFY, \
+                            OP_DROP, ScriptData, ScriptNum
 
 
 class TimeLockedScript(RedeemScript):
@@ -45,6 +44,7 @@ class TimeLockedScript(RedeemScript):
         Initializes the time locked script with the lifetime script, timelocked
         script and locktime
         """
+        super().__init__(None)
         self._locktime = locktime
         self._lifetime_script = lifetime_script
         self._timelocked_script = timelocked_script
@@ -62,20 +62,28 @@ class TimeLockedScript(RedeemScript):
                 <unlocked_script>
             OP_ENDIF
             <lifetime_script>
+
+        So if you want to spend the script after the locked time, you must
+        specify in the payment script a OP_1 (OP_TRUE), and OP_0 (OP_FALSe)
+        if you want to spend it before (or at anytime if provided a
+        lifetime_script).
+
+        Remember to put the payment script before the OP_0, OP_1
         """
         # Switch if / else to spend after / before the time lock gets
         self._data = [OP_IF]
         # CASE TO SPEND AFTER LOCKED TIME:
-        self._data += [StackDataField(self._locktime),
+        self._data += [ScriptData(ScriptNum(self._locktime)),
                        OP_CHECKLOCKTIMEVERIFY, OP_DROP]
+        # # Script to spend after locked time, if any
         if self._timelocked_script is not None:
             self._data += [self._timelocked_script]
-        # CASE TO SPEND BEFORE LOCKED TIME:
+        # CASE TO SPEND BEFORE LOCKED TIME, if any
         if self._unlocked_script is not None:
             self._data += [OP_ELSE, self._unlocked_script]
         # End of conditions
         self._data += [OP_ENDIF]
-        # Lifetime script
+        # Lifetime script, if any
         if self._lifetime_script is not None:
             self._data += [self._lifetime_script]
 

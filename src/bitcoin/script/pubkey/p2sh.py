@@ -14,26 +14,41 @@ class P2SH(ScriptPubKey):
     redeem script hash, automatically creating the scriptPubKey.
     """
 
-    def __init__(self, new_address):
+    def __init__(self, new_address, tx_output=None):
         """
         Initializes an empty P2SH and creates the basic P2PKH, changing the
         address object to a P2SH address object.
 
         Args:
             new_address (address.P2SH): P2SH address of the pubkey script
+            tx_output (TxOutput): transaction output the script belongs to
         """
         # Initialize super
-        super().__init__(new_address)
-        # Check address
-        assert isinstance(new_address, address.P2SH), """ address to set must
-        be a P2SH address object """
-        # Build script
-        self._build()
+        super().__init__(tx_output, None, new_address)
+        # Ensure type
+        self.address = new_address
 
     def _build(self):
         """
-        Creates the script with the opcodes of a P2SH scriptPubKey
+        Creates the script with the opcodes and data of a P2SH scriptPubKey
         """
-        self._data.append(OP_HASH160)
-        self._data.append(ScriptData(self._address.script_hash))
-        self._data.append(OP_EQUAL)
+        self._data = [
+            OP_HASH160, ScriptData(self._address.script_hash), OP_EQUAL
+        ]
+
+    @property
+    def address(self):
+        """
+        Returns the address the P2SH scriptPubKey is paying to
+        """
+        return self._address
+
+    @address.setter
+    def address(self, new_address):
+        """
+        Sets the new address to pay to
+        """
+        # Check is P2SH
+        assert isinstance(new_address, address.P2SH), "Address to set in " + \
+            "a P2SH scriptPubKey must be a P2SH address object"
+        self._address = new_address

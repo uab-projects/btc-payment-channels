@@ -1,12 +1,11 @@
 """
 Models a ReedemScript for a multisignature Address
 """
-
+# Libraries
+# # Built-in
 from .. import pay
 from .model import RedeemScript
-from .helper import get_op_code_n
-from ...field.opcode import OP_CMS
-from ...field.script import ScriptData
+from ...field import OP_CMS, ScriptData, get_op_code_n
 
 
 class MultiSig(RedeemScript):
@@ -26,7 +25,7 @@ class MultiSig(RedeemScript):
     __slots__ = ["_keys_needed", "_keys_total", "_public_keys"]
 
     def __init__(self, needed=None, total=None):
-        super().__init__()
+        super().__init__(None)
         assert needed is not None or total is not None, "You must specify " + \
             "at least the needed keys or the total keys"
         self._keys_needed = needed
@@ -35,7 +34,7 @@ class MultiSig(RedeemScript):
 
     def add_public_key(self, public_key):
         """
-        Adds a public key to the addressess list in order to have one more
+        Adds a public key to t he addressess list in order to have one more
         address to allow the payment
 
         Args:
@@ -56,17 +55,23 @@ class MultiSig(RedeemScript):
 
     def _build(self):
         """
-        Initializes the script with the opcodes and the data necessary.
+        Creates the script with the opcodes and the data necessary:
+            OP_M <pk_n> .. <pk_1> OP_N OP_CMS
         """
-        # OP_M <pk_n> .. <pk_1> OP_N OP_CMS
+        # Check all keys are provided
+        assert len(self._public_keys) == self._keys_total, "The MultiSig " + \
+            "redeem script needs exactly %d pubkeys" % self._keys_total
+        # Initialize and build
         self._data = []
-        assert len(self._public_keys) == self._keys_total, """That scripts needs
-        exactly %d pubkeys""" % self._keys_total
+        # Add needed keys to unlock
         if self._keys_needed is not None:
             self._data.append(get_op_code_n(self._keys_needed))
+        # Add public keys
         for pk in self._public_keys:
             self._data.append(ScriptData(pk))
+        # Add total number of public keys
         self._data.append(get_op_code_n(self._keys_total))
+        # Checkmultisig
         self._data.append(OP_CMS)
 
     @property

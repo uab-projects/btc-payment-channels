@@ -64,6 +64,15 @@ class Serializable(object):
         raise NotImplementedError("""Class should have implemented this, but"""
                                   """ developers of the app aren't so fast""")
 
+    def __len__(self):
+        """
+        Returns the length in bytes of the serialized object
+
+        Returns:
+            int: number of bytes the serialized object takes
+        """
+        return len(self.serialize())
+
 
 class Encodable(object):
     """

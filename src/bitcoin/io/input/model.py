@@ -7,9 +7,8 @@ https://en.bitcoin.it/wiki/Protocol_documentation#tx
 """
 # Libraries
 # # App
-from ...interfaces import Serializable
-from ...field.general import U4BLEInt, VarLEChar, VarInt
-from ...script.sig import ScriptSig
+from ..model import TxInputOutput
+from ...field import U4BLEInt, VarLEChar, VarInt
 
 # Constants
 DEFAULT_SEQUENCE = 0xffffffff
@@ -18,7 +17,7 @@ DEFAULT_SEQUENCE = 0xffffffff
 """
 
 
-class TxInput(Serializable):
+class TxInput(TxInputOutput):
     """
     Models a transaction input, containing the UTXO reference (aka outpoint),
     script and sequence number
@@ -33,7 +32,7 @@ class TxInput(Serializable):
     __slots__ = ["_utxo_id", "_utxo_n", "_script", "_sequence", "_tx"]
 
     def __init__(self, utxo_id, utxo_n, script=None,
-                 sequence=DEFAULT_SEQUENCE):
+                 sequence=DEFAULT_SEQUENCE, tx=None):
         """
         Initializes a transaction input given its UTXO id and number, the
         spending scriptsig and the optional sequence number
@@ -43,36 +42,34 @@ class TxInput(Serializable):
             utxo_n (int): number of output where the UTXO is located
             script (ScriptSig): scriptsig to spend the funds
             sequence (int): sequence number
+            tx (BasicTx): transaction the output belongs to
         """
-        # Save details
+        super().__init__(tx, script)
         self._utxo_id = VarLEChar(utxo_id)
         self._utxo_n = U4BLEInt(utxo_n)
-        self._script = ScriptSig()
-        # Given script
-        if script is not None:
-            self._script = script
-            # Set the input
-            if isinstance(script, ScriptSig):
-                script._input = self
         self._sequence = U4BLEInt(sequence)
 
     def serialize(self):
         """
         Serializes the transaction input into a bytes object
         """
-        serialized = []
-        # Add utxoID
-        serialized.append(self._utxo_id.serialize())
+        serializable = []
+        # Add utxo reference
+        serializable.append(self._utxo_id)
         # Add utxo index number
-        serialized.append(self._utxo_n.serialize())
-        # Add the script length
-        serialized.append(VarInt(len(self._script)).serialize())
-        # Add script
-        serialized.append(self._script.serialize())
+        serializable.append(self._utxo_n)
+        # Add the script length and script itself
+        if self._script is not None:
+            # Add script length and script
+            serializable.append(VarInt(len(self._script)))
+            serializable.append(self._script)
+        else:
+            # No script
+            serializable.append(VarInt(0))
         # Add the sequence
-        serialized.append(self._sequence.serialize())
+        serializable.append(self._sequence)
 
-        return b''.join(serialized)
+        return b''.join([x.serialize() for x in serializable])
 
     @classmethod
     def deserialize(cls, data):
@@ -83,23 +80,17 @@ class TxInput(Serializable):
 
     @property
     def utxo_id(self):
-        """ Returns the hash of the referenced transaction """
+        """
+        Returns the hash of the referenced transaction
+        """
         return self._utxo_id
 
     @property
     def utxo_n(self):
-        """ Returns the index of the specific output in the transaction """
+        """
+        Returns the index of the specific output in the transaction
+        """
         return self._utxo_n
-
-    @property
-    def script(self):
-        """ Returns the scriptsig """
-        return self._script
-
-    @script.setter
-    def script(self, script):
-        """ Sets the script, received as an instance of ScriptSig Class """
-        self._script = script
 
     @property
     def sequence(self):
@@ -110,16 +101,6 @@ class TxInput(Serializable):
     def sequence(self, value):
         """ Sets the sequence value """
         self._sequence = U4BLEInt(value)
-
-    @property
-    def tx(self):
-        """ Returns the transaction where the input belongs"""
-        return self._tx
-
-    @tx.setter
-    def tx(self, trans):
-        """ Sets the transaction reference """
-        self._tx = trans
 
     def __str__(self, space="", input_n=None):
         """
