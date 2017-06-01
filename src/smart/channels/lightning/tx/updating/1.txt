@@ -1,0 +1,24 @@
+Updating
+-------------------------------------------------------
+A,B -> B
+out1: to B  - p2pkh
+out2: to A,B
+
+OP IF
+	OP_HASH160 <hash(val)> OP_EQV <pubb> OP_CSV
+OP_ELSE
+	<time> OP_CLTV
+	<puba> OP_CSV
+OP_ENDIF
+
+
+SPENDING:
+out1:
+	<sigb>
+out2:
+	if:
+		<sigb> <val> 1
+	else:
+		<siga> 0
+
+-------------------------------------------------------
