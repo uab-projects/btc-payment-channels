@@ -22,3 +22,10 @@ out2:
 		<siga> 0
 
 -------------------------------------------------------
+OP_IF
+    <time> OP_CHECKLOCKTIMEVERIFY OP_DROP
+    <timelocked_script>
+OP_ELSE
+    <unlocked_script>
+OP_ENDIF
+<lifetime_script>
