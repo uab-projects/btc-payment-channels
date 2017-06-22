@@ -5,10 +5,10 @@ out1: to B  - p2pkh
 out2: to A,B
 
 OP IF
-	OP_HASH160 <hash(val)> OP_EQV <pubb> OP_CSV
+	<time> OP_CLTV OP_DROP
+	<puba> OP_CS
 OP_ELSE
-	<time> OP_CLTV
-	<puba> OP_CSV
+	OP_HASH160 <hash(val)> OP_EQV <pubb> OP_CS
 OP_ENDIF
 
 
@@ -20,12 +20,11 @@ out2:
 		<sigb> <val> 1
 	else:
 		<siga> 0
-
 -------------------------------------------------------
 OP_IF
-    <time> OP_CHECKLOCKTIMEVERIFY OP_DROP
-    <timelocked_script>
+	<time> OP_CHECKLOCKTIMEVERIFY OP_DROP
+	<timelocked_script>
 OP_ELSE
-    <unlocked_script>
+	<unlocked_script>
 OP_ENDIF
 <lifetime_script>
