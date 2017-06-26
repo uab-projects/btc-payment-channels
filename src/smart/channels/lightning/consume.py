@@ -8,7 +8,7 @@ from ....bitcoin import SignableTx, TxInput, TxOutput, ScriptData, Script, \
 def consume(keys, prev_tx_id=None, redeem_tricky=None, hash_val="",
             selection=0):
     # Constants
-    utxo_num = 0
+    utxo_num = 1
     utxo_value = 1
     fees = 0.00005
     to_pay = utxo_value - fees

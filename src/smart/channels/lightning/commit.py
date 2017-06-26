@@ -15,7 +15,7 @@ def commitment(keys, prev_tx_id=None, redeem_multi=None, selection=0):
     """
     # SCENARIO: ALICE PAYS BOB
     # Constants
-    utxo_num = 0
+    utxo_num = 1
     utxo_value = 1
     fees = 0.00005
     to_pay = utxo_value - fees
