@@ -2,29 +2,40 @@
 Defines the class and all the things needed to open a payment channel following
 the Lightning Network specification
 """
-
-from ......bitcoin import SignableTx, TxInput, TxOutput, MultiSigRedeemScript,\
+import sys
+from ....bitcoin import SignableTx, TxInput, TxOutput, MultiSigRedeemScript,\
                           TimeLockedRedeemScript, ScriptNum, ScriptData, \
                           Script, OP_HASH160, OP_CS, OP_EV, P2SHAddress, \
-                          P2PKHScriptSig
+                          P2PKHScriptSig, WIFAddress
 
-from ......bitcoin.crypto.hash import ripemd160_sha256
+from ....bitcoin.crypto.hash import ripemd160_sha256
 
 
-def opening():
+def decodeKeys(keys_list):
+    keys_decoded = []
+    for key in keys_list:
+        keys_decoded.append(WIFAddress.decode(key))
+
+    return keys_decoded
+
+
+def opening(keys):
     """
+    Creates the transaction filling all the fields for the opening Transaction
+    in order to create the Lightning Network
     """
     # SCENARIO: ALICE CREATES THE CHANNEL
     # Constants
     utxo_id = bytes().fromhex(
-        "")
+        "8dc10f058a0c6ee6ba481cfdb8cd350a5b406f76a024cdcbd96a87931372cb46")
     utxo_num = 0
     utxo_value = 1.00005
     fees = 0.00005
     to_pay = utxo_value - fees
 
-    keyAlice = ""
-    keyBob = ""
+    keyAlice = keys[0]
+    keyBob = keys[1]
+
     keys_multisig_num = 2
     lock_time_value = 1123520
 
@@ -35,6 +46,7 @@ def opening():
     # spending anytime with multisig
     unlocked_script = MultiSigRedeemScript(keys_multisig_num)
     # after specified time, Alice would spend with its own private key: refund
+    # for simplicy same where the funds came from.
     tl_script = Script([ScriptData(keyAlice.public_key), OP_CS])
 
     # Redeem script
@@ -74,11 +86,12 @@ def opening():
     return transaction, redeem_script
 
 
-def commitment(prev_tx_id=None, prev_redeem_script=None):
+def commitment(keys, prev_tx_id=None, prev_redeem_script=None, selection=0):
     """
+    Creates the transaction filling all the fields for updating the balances in
+    the Lightning Network
     """
     # SCENARIO: ALICE PAYS BOB
-    pass
     # Constants
     utxo_num = 0
     utxo_value = 1
@@ -88,9 +101,8 @@ def commitment(prev_tx_id=None, prev_redeem_script=None):
 
     lock_time_value = 1123520
     hash_val = "test"
-    keyAlice = ""
-    keyBob = ""
-    selection = 0
+    keyAlice = keys[0]
+    keyBob = keys[1]
 
     # Creation
     transaction = SignableTx()
@@ -145,14 +157,22 @@ def commitment(prev_tx_id=None, prev_redeem_script=None):
 
 
 if __name__ == "__main__":
-    tx, redeem_script = opening()
-    upd_tx = commitment(tx.id, redeem_script)
+    # Read args
+    sel = int(sys.argv[1])
+
+    keys = sys.argv[2:]
+    keys_decoded = decodeKeys(keys)
+
+    tx, redeem_script = opening(keys_decoded)
 
     print("Opening transaction")
     print(tx)
     print(tx.serialize().hex())
 
+    """
+    upd_tx = commitment(tx.id, redeem_script, selection=sel)
     print("Alice creates the transaction, Bob could have done the same, \
             mirroring.")
     print(upd_tx)
     print(upd_tx.serialize().hex())
+    """

@@ -20,8 +20,8 @@ class TxInputOutput(Serializable):
         """
         Initializes a new transaction input / output given it's script
         """
-        self.tx = tx
-        self.script = script
+        self._tx = tx
+        self._script = script
 
     @property
     def tx(self):

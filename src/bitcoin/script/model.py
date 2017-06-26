@@ -98,7 +98,7 @@ class TxInputOutputScript(Script):
         Initializes an i/o script given the parent and data
         """
         super().__init__(data)
-        self.parent = parent
+        self._parent = parent
 
     @property
     def parent(self):

@@ -7,7 +7,7 @@ from abc import abstractmethod
 # # App
 from ..pay import PayScript
 from ...crypto.hash import ripemd160_sha256
-from ..general import Script
+from ..model import Script
 
 
 class RedeemScript(Script):
