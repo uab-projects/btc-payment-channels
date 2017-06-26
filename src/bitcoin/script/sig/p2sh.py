@@ -42,7 +42,7 @@ class P2SH(ScriptSig):
         assert self._redeem_script is not None, "Can't build the P2SH " + \
             "scriptSig, the redeem script has not been set"
         self._data = [self._payment_script, ScriptData(
-            self._reedem_script.serialize())]
+            self._redeem_script.serialize())]
 
     @property
     def redeem_script(self):

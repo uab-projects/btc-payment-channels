@@ -80,7 +80,8 @@ class SignableTx(BasicTx):
         signable_tx = copy.deepcopy(self)
         # Empty all scripts
         for tx_in in signable_tx.inputs:
-            tx_in.script = script.sig.ScriptSig()
+            tx_in.script.input = tx_in
+            tx_in.script = script.ScriptSig()
         # Assign the pubkey script to the input script
         signable_tx.inputs[input_num].script = script_pubkey
         # Apply hashtype
@@ -129,6 +130,8 @@ class SignableTx(BasicTx):
         Returns:
             bytes: bytes object containing the signature
         """
+        print(script_pubkey)
+        print(type(script_pubkey))
         # Create signable transaction for the input
         signable_tx = self.signable_tx(input_num, script_pubkey, hashtype)
         return ecdsa.der_sign(signable_tx.signable_hash(), key) + \

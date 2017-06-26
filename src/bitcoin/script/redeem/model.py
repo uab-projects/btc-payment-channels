@@ -7,10 +7,10 @@ from abc import abstractmethod
 # # App
 from ..pay import PayScript
 from ...crypto.hash import ripemd160_sha256
-from ..model import Script
+from ..model import TxInputOutputScript
 
 
-class RedeemScript(Script):
+class RedeemScript(TxInputOutputScript):
     """
     Models a general reedem script, allowing to hash it to include it in a
     P2SH address

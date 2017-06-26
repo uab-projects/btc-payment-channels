@@ -6,7 +6,8 @@ import sys
 from ....bitcoin import SignableTx, TxInput, TxOutput, MultiSigRedeemScript,\
                           TimeLockedRedeemScript, ScriptNum, ScriptData, \
                           Script, OP_HASH160, OP_CS, OP_EV, P2SHAddress, \
-                          P2PKHScriptSig, WIFAddress
+                          P2PKHScriptSig, WIFAddress, P2PKHAddress, \
+                          P2SHScriptSig
 
 from ....bitcoin.crypto.hash import ripemd160_sha256
 
@@ -42,7 +43,6 @@ def opening(keys):
     # CREATION
     transaction = SignableTx()
     lock_time = ScriptNum(lock_time_value)
-
     # spending anytime with multisig
     unlocked_script = MultiSigRedeemScript(keys_multisig_num)
     # after specified time, Alice would spend with its own private key: refund
@@ -53,7 +53,7 @@ def opening(keys):
     redeem_script = TimeLockedRedeemScript(
         unlocked_script=unlocked_script,
         timelocked_script=tl_script,
-        locktime=lock_time
+        locktime=lock_time.value
     )
     # Add keys for multisig script
     keys_multisig = [keyAlice, keyBob]
@@ -66,19 +66,19 @@ def opening(keys):
     in0 = TxInput(utxo_id, utxo_num, P2PKHScriptSig())
     # Bob funds
     # in1 = TxInput(utxo_id, utxo_num, P2PKHScriptSig())
-
+    in0.script.input = in0
     transaction.add_input(in0)
     # transaction.add_input(in1)
 
     # CREATE THE OUTPUTS
     redeem_address = P2SHAddress(redeem_script)
-    out0 = TxOutput(redeem_address, btc=to_pay)
+    out0 = TxOutput(redeem_address.script, btc=to_pay)
 
     transaction.add_output(out0)
 
     # ADD SIGNATURES
     # Alice signature
-    transaction.inputs[0].script.sign(keyAlice)
+    transaction.inputs[0].script.sign(keyAlice.private_key)
     # Bob Signature
     # transaction.inputs[1].script.sign(keyBob)
 
@@ -86,7 +86,7 @@ def opening(keys):
     return transaction, redeem_script
 
 
-def commitment(keys, prev_tx_id=None, prev_redeem_script=None, selection=0):
+def commitment(keys, prev_tx_id=None, redeem_multi=None, selection=0):
     """
     Creates the transaction filling all the fields for updating the balances in
     the Lightning Network
@@ -106,6 +106,17 @@ def commitment(keys, prev_tx_id=None, prev_redeem_script=None, selection=0):
 
     # Creation
     transaction = SignableTx()
+
+    # Create the inputs
+    pay_script = redeem_multi.pay_script
+    pay_script.selection = selection  # multisig
+
+    in0 = TxInput(prev_tx_id, utxo_num,
+                  P2SHScriptSig(redeem_multi, pay_script))
+    in0.script.input = in0
+    transaction.add_input(in0)
+
+    # Create the outputs
     lock_time = ScriptNum(lock_time_value)
     hash_val = ripemd160_sha256(str.encode(hash_val))
 
@@ -113,47 +124,39 @@ def commitment(keys, prev_tx_id=None, prev_redeem_script=None, selection=0):
                               ScriptData(keyBob.public_key), OP_CS])
     tl_script = Script([ScriptData(keyAlice.public_key), OP_CS])
 
-    redeem_script = TimeLockedRedeemScript(
+    redeem_tricky = TimeLockedRedeemScript(
         unlocked_script=unlocked_script,
         timelocked_script=tl_script,
-        locktime=lock_time
+        locktime=lock_time.value
     )
 
-    # Create the inputs
-    pay_script = prev_redeem_script.pay_script
-    in0 = TxInput(prev_tx_id, utxo_num, pay_script)
-
-    transaction.add_input(in0)
-
-    # Create the outputs
     # Payment to Bob
-    out0 = TxOutput(keyBob.p2pkh, btc=to_pay)
+    out0 = TxOutput(P2PKHAddress(keyBob.public_key).script, btc=to_pay)
     transaction.add_output(out0)
-    # Returns to her
-    redeem_address = P2SHAddress(redeem_script)
-    out1 = TxOutput(redeem_address, btc=to_return)
+    # Tricky output
+    redeem_address = P2SHAddress(redeem_tricky)
+    out1 = TxOutput(redeem_address.script, btc=to_return)
     transaction.add_output(out1)
 
     pay_script.selection = selection
 
     # SPENDING
     if selection == 0:
-        # Bob, with the pre-image of the hash can spend
-        signature = transaction.sign(keyBob.private_key, 0, redeem_script)
-        pay_script.script = Script([ScriptData(signature)],
-                                   ScriptData[hash_val])
+        signature = transaction.sign(keyBob.private_key, 0, redeem_multi)
+        pay_script.script = Script([ScriptData(signature),
+                                   ScriptData(hash_val)])
     else:
-        # Alice after a time can spend her money
+        # Multisig case
         transaction.locktime = lock_time_value
-        signature = transaction.sign(keyAlice.private_key, 0, redeem_script)
-        pay_script.script = Script([ScriptData(signature)])
+        signatureAlice = transaction.sign(keyAlice.private_key, 0,
+                                          redeem_multi)
+        signatureBob = transaction.sign(keyBob.private_key, 0, redeem_multi)
 
-    # Add signature
-    transaction.inputs[0].script.sign(keyAlice)
-    transaction.inputs[0].script.sign(keyBob)
+        pay_script.script = Script([ScriptData(signatureAlice),
+                                   ScriptData(signatureBob)])
 
-    # Returns the transaction
-    return transaction
+    # Returns the transaction and its redeem script
+    return transaction, redeem_tricky
 
 
 if __name__ == "__main__":
@@ -163,16 +166,16 @@ if __name__ == "__main__":
     keys = sys.argv[2:]
     keys_decoded = decodeKeys(keys)
 
-    tx, redeem_script = opening(keys_decoded)
+    tx, redeem_multi = opening(keys_decoded)
 
     print("Opening transaction")
     print(tx)
     print(tx.serialize().hex())
 
-    """
-    upd_tx = commitment(tx.id, redeem_script, selection=sel)
+    upd_tx, redeem_tricky = commitment(keys_decoded, tx.id, redeem_multi,
+                                       selection=sel)
     print("Alice creates the transaction, Bob could have done the same, \
             mirroring.")
+    print(redeem_tricky)
     print(upd_tx)
     print(upd_tx.serialize().hex())
-    """

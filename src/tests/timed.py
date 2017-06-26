@@ -39,7 +39,7 @@ if __name__ == "__main__":
     redeem_script = redeem.TimeLockedScript(
         unlocked_script=unlocked_script,
         timelocked_script=tl_script,
-        locktime=lock_time
+        locktime=lock_time.value
     )
     # Fill multisig
     for key in keys_multisig:
@@ -48,7 +48,8 @@ if __name__ == "__main__":
 
     # Add input
     transaction.add_input(TxInput(utxo_id, utxo_num, script.sig.P2PKH()))
-
+    in0 = transaction.inputs[0]
+    in0.script.input = in0
     # Add outputs
     redeem_address = address.P2SH(redeem_script)
     transaction.add_output(TxOutput(redeem_address.script, btc=to_pay))

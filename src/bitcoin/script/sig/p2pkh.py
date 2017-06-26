@@ -59,10 +59,10 @@ class P2PKH(ScriptSig):
             hashtype (HashType.item): hashtype to use to create signature
         """
         # Assert can be signed
-        assert self._input is not None and self._input.tx is not None, \
+        assert self.input is not None and self.input.tx is not None, \
             "To sign the P2PKH scriptSig, there must be an input related " + \
             "to the scriptSig that is related to a transaction"
-        assert isinstance(self._input.tx, SignableTx), "To sign the P2PKH " + \
+        assert isinstance(self.input.tx, SignableTx), "To sign the P2PKH " + \
             "scriptSig, the related transaction must be a SignableTx"
         # Get public key
         self._public_key = private_to_public(key)
@@ -71,8 +71,8 @@ class P2PKH(ScriptSig):
             # Create a P2PKH pubkey script from key to sign
             script = address.P2PKH(public_key=self._public_key).script
         # Sign and add
-        self._signature = self._input.tx.sign(
-            key, self._input, script, hashtype)
+        self._signature = self.input.tx.sign(
+            key, self.input, script, hashtype)
 
     @property
     def is_signed(self):
