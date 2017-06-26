@@ -21,7 +21,7 @@ in the Bitcoin protocol but not available here because it's not used anywhere.
 from .general import U2BLEInt, U4BLEInt, U8BLEInt, S4BLEInt, VarInt, VarLEChar
 from .opcode import OP_0, get_op_code_n, OP_PUSHDATA_MIN, OP_PUSHDATA_MAX, \
                     OP_PUSHDATA_MAX_BYTES, OP_1, OP_2, OP_PUSHDATA1, \
-                    OP_PUHSDATA2, OP_PUSHDATA4, OP_IF, OP_ELSE, OP_ENDIF, \
+                    OP_PUSHDATA2, OP_PUSHDATA4, OP_IF, OP_ELSE, OP_ENDIF, \
                     OP_DROP, OP_DUP, OP_OVER, OP_EQUAL, OP_EV, \
                     OP_EQUALVERIFY, OP_HASH160, OP_CODESEPARATOR, OP_CS, \
                     OP_CHECKSIG, OP_CMS, OP_CHECKMULTISIG, OP_CLTV, \
