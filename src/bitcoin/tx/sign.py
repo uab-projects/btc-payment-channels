@@ -130,8 +130,6 @@ class SignableTx(BasicTx):
         Returns:
             bytes: bytes object containing the signature
         """
-        print(script_pubkey)
-        print(type(script_pubkey))
         # Create signable transaction for the input
         signable_tx = self.signable_tx(input_num, script_pubkey, hashtype)
         return ecdsa.der_sign(signable_tx.signable_hash(), key) + \
