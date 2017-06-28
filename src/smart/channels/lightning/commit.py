@@ -4,7 +4,7 @@ Creates a transaction for updating the current channel state
 from ....bitcoin import SignableTx, TxInput, TxOutput, \
                           TimeLockedRedeemScript, ScriptNum, ScriptData, \
                           Script, OP_HASH160, OP_CS, OP_EV, P2SHAddress, \
-                          P2PKHAddress, P2SHScriptSig
+                          P2PKHAddress, P2SHScriptSig, OP_0
 from ....bitcoin.crypto.hash import ripemd160_sha256
 
 
@@ -15,13 +15,13 @@ def commitment(keys, prev_tx_id=None, redeem_multi=None, selection=0):
     """
     # SCENARIO: ALICE PAYS BOB
     # Constants
-    utxo_num = 1
-    utxo_value = 1
+    utxo_num = 0
+    utxo_value = 0.49995000
     fees = 0.00005
-    to_pay = utxo_value - fees
-    to_return = utxo_value - to_pay
+    to_pay = 0.4
+    to_return = utxo_value - to_pay - fees
 
-    lock_time_value = 1123520
+    lock_time_value = 1149120
     hash_val = "test"
     keyAlice = keys[0]
     keyBob = keys[1]
@@ -31,7 +31,7 @@ def commitment(keys, prev_tx_id=None, redeem_multi=None, selection=0):
 
     # Create the inputs
     pay_script = redeem_multi.pay_script
-    pay_script.selection = selection  # multisig
+    pay_script.selection = 0  # multisig
 
     in0 = TxInput(prev_tx_id, utxo_num,
                   P2SHScriptSig(redeem_multi, pay_script))
@@ -60,20 +60,17 @@ def commitment(keys, prev_tx_id=None, redeem_multi=None, selection=0):
     out1 = TxOutput(redeem_address.script, btc=to_return)
     transaction.add_output(out1)
 
-    pay_script.selection = selection
-
     # SPENDING
-    if selection == 0:
+    if selection:
         raise NotImplementedError("Only multisig spending allowed by the \
                                   moment.")
     else:
         # Multisig case
-        transaction.locktime = lock_time_value
         signatureAlice = transaction.sign(keyAlice.private_key, 0,
                                           redeem_multi)
         signatureBob = transaction.sign(keyBob.private_key, 0, redeem_multi)
 
-        pay_script.script = Script([ScriptData(signatureAlice),
+        pay_script.script = Script([OP_0, ScriptData(signatureAlice),
                                    ScriptData(signatureBob)])
 
     # Returns the transaction and its redeem script

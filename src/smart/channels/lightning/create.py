@@ -17,9 +17,9 @@ def opening(keys):
     # SCENARIO: ALICE CREATES THE CHANNEL
     # Constants
     utxo_id = bytes().fromhex(
-        "8dc10f058a0c6ee6ba481cfdb8cd350a5b406f76a024cdcbd96a87931372cb46")
+        "bc5896c5ee98a8536142298f624e88d976f5d1d0f8afe4b2e2d2f5c7b9a1ba06")
     utxo_num = 0
-    utxo_value = 1.00005
+    utxo_value = 0.50000000
     fees = 0.00005
     to_pay = utxo_value - fees
 
@@ -27,7 +27,7 @@ def opening(keys):
     keyBob = keys[1]
 
     keys_multisig_num = 2
-    lock_time_value = 1123520
+    lock_time_value = 1149115
 
     # CREATION
     transaction = SignableTx()

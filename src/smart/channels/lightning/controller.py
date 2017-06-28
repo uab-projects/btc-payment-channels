@@ -31,7 +31,7 @@ if __name__ == "__main__":
     print(tx.serialize().hex())
 
     upd_tx, redeem_tricky = commitment(keys_decoded, tx.id, redeem_multi,
-                                       selection=1)
+                                       selection=0)
     print("---------------------------------------------")
     print("Commitment transaction, Alice creates this one")
     print(upd_tx)

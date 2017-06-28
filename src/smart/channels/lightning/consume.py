@@ -9,11 +9,11 @@ def consume(keys, prev_tx_id=None, redeem_tricky=None, hash_val="",
             selection=0):
     # Constants
     utxo_num = 1
-    utxo_value = 1
+    utxo_value = 0.09989999
     fees = 0.00005
     to_pay = utxo_value - fees
 
-    lock_time_value = 1123520
+    lock_time_value = 1149110
     keyAlice = keys[0]
     keyBob = keys[1]
 
