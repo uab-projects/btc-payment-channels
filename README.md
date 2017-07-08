@@ -7,6 +7,8 @@ The code is written in _Python 3_, and requires some libraries (available in [_P
 #### Required
 The following libraries are required for the software to run:
  - bitcoinlib
+ - ecdsa
+ - [pycoin](https://github.com/richardkiss/pycoin)
 
 
 ### Running the application
@@ -15,20 +17,6 @@ The application is command-line based so, open a terminal and change into the re
 python src -h
 ```
 The `-h` argument will help you to discover how the software works and what it can do for you
-
-## TO-DO
-__Fields:__
-- [ ] varchar
-- [ ] uchar[]
-- [ ] int64_t
-
-**Scripting**
-- [ ] Structure
-
-**Transaction**
-- [ ] inputs
-- [ ] outputs
-
 
 ### License
 
