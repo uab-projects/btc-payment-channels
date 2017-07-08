@@ -6,10 +6,9 @@ The code is written in _Python 3_, and requires some libraries (available in [_P
 ### Libraries
 #### Required
 The following libraries are required for the software to run:
- - bitcoinlib
- - ecdsa
- - [pycoin](https://github.com/richardkiss/pycoin)
+ - [bitcoin-framework](https://github.com/uab-projects/bitcoin-framework)
 
+You can install it using `pip install bitcoin-framework`
 
 ### Running the application
 The application is command-line based so, open a terminal and change into the repo's root. Then, you can run the application calling to Python interpreter into main script:
