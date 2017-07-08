@@ -1,6 +1,6 @@
 import sys
 
-from ....bitcoin import WIFAddress
+from bitcoin import WIFAddress
 
 from .create import opening
 from .commit import commitment

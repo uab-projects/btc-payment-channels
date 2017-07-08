@@ -1,7 +1,7 @@
 """
 Consumes the current channel state transaction
 """
-from ....bitcoin import SignableTx, TxInput, TxOutput, ScriptData, Script, \
+from bitcoin import SignableTx, TxInput, TxOutput, ScriptData, Script, \
                           P2PKHAddress, P2SHScriptSig
 
 

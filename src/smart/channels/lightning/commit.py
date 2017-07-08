@@ -1,11 +1,11 @@
 """
 Creates a transaction for updating the current channel state
 """
-from ....bitcoin import SignableTx, TxInput, TxOutput, \
+from bitcoin import SignableTx, TxInput, TxOutput, \
                           TimeLockedRedeemScript, ScriptNum, ScriptData, \
                           Script, OP_HASH160, OP_CS, OP_EV, P2SHAddress, \
                           P2PKHAddress, P2SHScriptSig, OP_0
-from ....bitcoin.crypto.hash import ripemd160_sha256
+from bitcoin.crypto.hash import ripemd160_sha256
 
 
 def commitment(keys, prev_tx_id=None, redeem_multi=None, selection=0):
